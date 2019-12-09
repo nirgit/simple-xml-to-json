@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <parent>
-    <children>
-        <child name="Foo"></child>
-        <child name="Bar">
-            <children>
-                <child name="grandson"></child>
-            </children>
-        </child>
-    </<children>
+    <child name="Foo"></child>
+    <child name="Bar">
+        <child name="grandson"></child>
+    </child>
 </parent>
