@@ -1,0 +1,15 @@
+{
+  "name": "xml-to-json",
+  "version": "1.0.0",
+  "description": "A library converting XML schema to JSON",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "xml",
+    "json"
+  ],
+  "author": "Nir Moav",
+  "license": "MIT"
+}
