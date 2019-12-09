@@ -4,7 +4,7 @@
   "description": "A library converting XML schema to JSON",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx jest"
   },
   "keywords": [
     "xml",
