@@ -1,0 +1,99 @@
+'use strict'
+
+const {Token, TOKEN_TYPE} = require('./model')
+
+function createLexer(xmlAsString) {
+
+    let currentToken = null
+    let pos = 0
+    let row = 0
+
+    const current = () => currentToken
+    const hasNext = () => pos < xmlAsString.length
+    const isBlankSpace = () => {
+        const char = xmlAsString[pos]
+        return char === " " || char === "\n" || char === "\r"
+    }
+
+    const skipSpaces = () => {
+        while (isBlankSpace() && hasNext()) pos++
+    }
+
+    const readAlphaNumericCharsOrBrackets = () => {
+        if (hasNext()) {
+            if (xmlAsString[pos] === '<') {
+                let buffer = '<'
+                pos++
+                if (hasNext() && xmlAsString[pos] === '/') {
+                    pos++
+                    buffer += '/'
+                }
+                return buffer
+            }
+        }
+        let start = pos
+        while (hasNext() && xmlAsString[pos].match(/[a-zA-Z0-9\>]/)) pos++
+        const buffer = xmlAsString.substring(start, pos)
+        if (buffer.endsWith('>')) {
+            return buffer.slice(0, buffer.length - 1)
+        }
+        return buffer
+    }
+
+    const next = () => {
+        if (!hasNext()) {
+            return Token('EOF')
+        }
+        if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
+            skipSpaces()
+            const buffer = readAlphaNumericCharsOrBrackets()
+            currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
+        } else {
+            skipSpaces()
+            const buffer = readAlphaNumericCharsOrBrackets()
+            switch (buffer) {
+                case "=": {
+                    currentToken = Token(TOKEN_TYPE.ASSIGN)
+                    break;
+                }
+                case "</": {
+                    const start = pos
+                    while (xmlAsString[pos] !== ">") pos++
+                    currentToken = Token(TOKEN_TYPE.CLOSE_BRACKET, xmlAsString.substring(start, pos))
+                    pos++ // skip the ">"
+                    break;
+                }
+                case "<": {
+                    currentToken = Token(TOKEN_TYPE.OPEN_BRACKET)
+                    break;
+                }
+                default: { // here we fall if we have alphanumeric string, which can be related to attributes or nothing
+                    if (buffer && buffer.length > 0) {
+                        if (currentToken.type === TOKEN_TYPE.ATTRIB_NAME) {
+                            // it should be a value token
+                            currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
+                        } else {
+                            // it should be a name token
+                            currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
+                        }
+                        break;
+                    }
+                    const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
+                    throw new Error(errMsg)
+                }
+            }
+        }
+
+        return currentToken
+    }
+
+    return {
+        current,
+        next,
+        hasNext
+    }
+}
+
+module.exports = {
+    createLexer
+}
