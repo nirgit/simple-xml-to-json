@@ -4,6 +4,7 @@ const {Token, TOKEN_TYPE} = require('./model')
 
 function createLexer(xmlAsString) {
 
+    xmlAsString = xmlAsString.replace(/'/g, '"')
     let currentToken = null
     let pos = 0
     let row = 0
@@ -15,8 +16,11 @@ function createLexer(xmlAsString) {
         return char === " " || char === "\n" || char === "\r"
     }
 
+    const skipQuotes = () => {
+        if (hasNext() && xmlAsString[pos] === '"') pos++
+    }
     const skipSpaces = () => {
-        while (isBlankSpace() && hasNext()) pos++
+        while (hasNext() && isBlankSpace()) pos++
     }
 
     const readAlphaNumericCharsOrBrackets = () => {
@@ -29,6 +33,9 @@ function createLexer(xmlAsString) {
                     buffer += '/'
                 }
                 return buffer
+            } else if (xmlAsString[pos] === '=') {
+                pos++
+                return '='
             }
         }
         let start = pos
@@ -42,12 +49,18 @@ function createLexer(xmlAsString) {
 
     const next = () => {
         if (!hasNext()) {
-            return Token('EOF')
-        }
-        if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
+            currentToken = Token('EOF')
+        } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets()
             currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
+        } else if (currentToken && currentToken.type === TOKEN_TYPE.ASSIGN) {
+            skipQuotes()
+            let start = pos
+            while (hasNext() && xmlAsString[pos] !== '"') pos++
+            const buffer = xmlAsString.substring(start, pos)
+            pos++
+            currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
         } else {
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets()
@@ -69,17 +82,15 @@ function createLexer(xmlAsString) {
                 }
                 default: { // here we fall if we have alphanumeric string, which can be related to attributes or nothing
                     if (buffer && buffer.length > 0) {
-                        if (currentToken.type === TOKEN_TYPE.ATTRIB_NAME) {
+                        if (currentToken.type !== TOKEN_TYPE.ATTRIB_NAME) {
                             // it should be a value token
-                            currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
-                        } else {
-                            // it should be a name token
                             currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
                         }
                         break;
+                    } else {
+                        const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
+                        throw new Error(errMsg)
                     }
-                    const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
-                    throw new Error(errMsg)
                 }
             }
         }
