@@ -2,9 +2,18 @@
 
 const {Token, TOKEN_TYPE} = require('./model')
 
+const normalizeXMLForLexer = xmlAsString => {
+    if (xmlAsString.startsWith('<?xml')) {
+        xmlAsString = xmlAsString.replace(/<\?xml.*\?>/, '')
+    }
+    xmlAsString = xmlAsString.replace(/'/g, '"')
+
+    return xmlAsString
+}
+
 function createLexer(xmlAsString) {
 
-    xmlAsString = xmlAsString.replace(/'/g, '"')
+    xmlAsString = normalizeXMLForLexer(xmlAsString)
     let currentToken = null
     let pos = 0
     let row = 0
