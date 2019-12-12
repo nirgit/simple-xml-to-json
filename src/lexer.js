@@ -33,21 +33,20 @@ function createLexer(xmlAsString) {
                     buffer += '/'
                 }
                 return buffer
-            } else if (xmlAsString[pos] === '=') {
+            } else if (xmlAsString[pos] === '=' || xmlAsString[pos] === '>') {
+                const buffer = xmlAsString[pos]
                 pos++
-                return '='
+                return buffer
             }
         }
         let start = pos
-        while (hasNext() && xmlAsString[pos].match(/[a-zA-Z0-9\>]/)) pos++
+        while (hasNext() && xmlAsString[pos].match(/[a-zA-Z0-9]/)) pos++
         const buffer = xmlAsString.substring(start, pos)
-        if (buffer.endsWith('>')) {
-            return buffer.slice(0, buffer.length - 1)
-        }
         return buffer
     }
 
     const next = () => {
+        skipSpaces();
         if (!hasNext()) {
             currentToken = Token('EOF')
         } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
@@ -72,9 +71,13 @@ function createLexer(xmlAsString) {
                 case "</": {
                     const start = pos
                     while (xmlAsString[pos] !== ">") pos++
-                    currentToken = Token(TOKEN_TYPE.CLOSE_BRACKET, xmlAsString.substring(start, pos))
+                    currentToken = Token(TOKEN_TYPE.CLOSE_ELEMENT, xmlAsString.substring(start, pos))
                     pos++ // skip the ">"
                     break;
+                }
+                case ">": {
+                    currentToken = Token(TOKEN_TYPE.CLOSE_BRACKET)
+                    break
                 }
                 case "<": {
                     currentToken = Token(TOKEN_TYPE.OPEN_BRACKET)
@@ -88,7 +91,8 @@ function createLexer(xmlAsString) {
                         }
                         break;
                     } else {
-                        const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
+                        // const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
+                        const errMsg = 'Unknown Syntax : "' + buffer + '"'
                         throw new Error(errMsg)
                     }
                 }
