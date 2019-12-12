@@ -16,7 +16,6 @@ function createLexer(xmlAsString) {
     xmlAsString = normalizeXMLForLexer(xmlAsString)
     let currentToken = null
     let pos = 0
-    let row = 0
 
     const current = () => currentToken
     const hasNext = () => pos < xmlAsString.length
@@ -100,7 +99,6 @@ function createLexer(xmlAsString) {
                         }
                         break;
                     } else {
-                        // const errMsg = 'Unknown Syntax at position: ' + pos + " | " + xmlAsString.substr(pos, 3) + "..."
                         const errMsg = 'Unknown Syntax : "' + buffer + '"'
                         throw new Error(errMsg)
                     }

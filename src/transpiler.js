@@ -12,9 +12,10 @@ const Node = (type, value) => ({
 const parseXML = xmlAsString => {
     /*
         How does the grammar look?
-        | expr: (openBracket + ElementName) + (AttributeList)* + (expr)* + (closeBracket + ElementName + ">")
+        | expr: (openBracket + ElementName) + (AttributeList)* + closeBracket + (expr)* + closeElement
         | openBracket: <
-        | closeBracket: </
+        | closeBracket: >
+        | closeElement: </ + ElementName + closeBracket
         | ElementName: String
         | AttributeList: AttributeName + "=" + AttributeValue + AttributeList*
         | AttributeName: String
