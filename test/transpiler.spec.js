@@ -48,6 +48,9 @@ describe('transpiler', () => {
         <a ap1="av1" ap2="av2">
             <b bp1='bv1'></b>
             <b bp2='bv2'></b>
+            <b bp3='bv3'>
+                <c cp1='cv1' cp2='cv2'></c>
+            </b>
         </a>
         `
         const ast = transpile(mockXML)
@@ -61,7 +64,15 @@ describe('transpiler', () => {
                         attributes: [AttribNode('ap1', 'av1'), AttribNode('ap2', 'av2')],
                         children: [
                             ElementNode('b', [AttribNode('bp1', 'bv1')], []),
-                            ElementNode('b', [AttribNode('bp2', 'bv2')], [])
+                            ElementNode('b', [AttribNode('bp2', 'bv2')], []),
+                            ElementNode('b', [AttribNode('bp3', 'bv3')], [{
+                                type: "ELEMENT",
+                                value: {
+                                    type: "c",
+                                    attributes: [AttribNode('cp1', 'cv1'), AttribNode('cp2', 'cv2')],
+                                    children: []
+                                }
+                            }])
                         ]
                     }
                 }]
