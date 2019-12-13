@@ -3,7 +3,12 @@
 const {Token, TOKEN_TYPE} = require('./model')
 const EOF_TOKEN = Token('EOF')
 
+const isCharBlank = char => char === " " || char === "\n" || char === "\r"
+
 const normalizeXMLForLexer = xmlAsString => {
+    let pos = 0
+    while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
+    xmlAsString = xmlAsString.substr(pos)
     if (xmlAsString.startsWith('<?xml')) {
         xmlAsString = xmlAsString.replace(/<\?xml.*\?>/, '')
     }
@@ -15,6 +20,7 @@ const normalizeXMLForLexer = xmlAsString => {
 function createLexer(xmlAsString) {
 
     xmlAsString = normalizeXMLForLexer(xmlAsString)
+    
     let currentToken = null
     let pos = 0
 
@@ -22,7 +28,7 @@ function createLexer(xmlAsString) {
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
     const isBlankSpace = () => {
         const char = xmlAsString[pos]
-        return char === " " || char === "\n" || char === "\r"
+        return isCharBlank(char)
     }
 
     const skipQuotes = () => {

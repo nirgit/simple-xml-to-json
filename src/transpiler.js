@@ -26,7 +26,7 @@ const AttribNode = (name, value) => {
 }
 
 
-const parseXML = (lexer, xmlAsString) => {
+const parseXML = lexer => {
     /*
         How does the grammar look?
         | expr: (openBracket + ElementName) + (AttributeList)* + closeBracket + (expr)* + closeElement
@@ -61,7 +61,6 @@ const parseExpr = (lexer, scopingElement) => {
                break
            }
            case TOKEN_TYPE.CLOSE_ELEMENT: {
-            //    debugger
                if (lexem.value === scopingElement.value) return children
                break
             }
@@ -83,7 +82,7 @@ const parseElementAttributes = lexer => {
     currentToken = lexer.next()
     while (lexer.hasNext() && currentToken && currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET) {
         const attribName = currentToken
-        lexer.next() //assignment
+        lexer.next() //assignment token
         const attribValue = lexer.next()
         const attributeNode = AttribNode(attribName.value, attribValue.value)
         attribs.push(attributeNode)
@@ -92,12 +91,13 @@ const parseElementAttributes = lexer => {
     return attribs
 }
 
-const convertAST2Json = ast => ast
-
-function transpile(xmlAsString) {
+function transpile(xmlAsString, astConverter) {
     const lexer = createLexer(xmlAsString)
     const ast = parseXML(lexer, xmlAsString)
-    return convertAST2Json(ast)
+    if (astConverter) {
+        return astConverter(ast)
+    }
+    return ast
 }
 
 module.exports = {
