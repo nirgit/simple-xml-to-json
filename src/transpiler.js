@@ -1,7 +1,7 @@
 'use strict';
 
 const {createLexer} = require('./lexer')
-const {TOKEN_TYPE} = require('./model')
+const {Token, TOKEN_TYPE} = require('./model')
 // AST Node types
 const [ROOT, ELEMENT, ATTRIBUTE] = ["ROOT", "ELEMENT", "ATTRIBUTE"]
 
@@ -39,12 +39,12 @@ const parseXML = (lexer, xmlAsString) => {
         | AttributeValue: String
     */
    const rootNode = Node(ROOT, {
-       children: parseExpr(lexer)
+       children: parseExpr(lexer, Token(ROOT, 'ROOT'))
    })
    return rootNode
 }
 
-const parseExpr = (lexer) => {
+const parseExpr = (lexer, scopingElement) => {
     const children = []
     while (lexer.hasNext()) {
        const lexem = lexer.next()
@@ -52,15 +52,19 @@ const parseExpr = (lexer) => {
            case TOKEN_TYPE.OPEN_BRACKET: {
                const elementLexem = lexer.next()
                const elementAttributes = parseElementAttributes(lexer)
-               const elementBody = parseExpr(lexer)
+               const elementChildren = parseExpr(lexer, elementLexem)
                children.push(ElementNode(
                    elementLexem.value,
                    elementAttributes,
-                   elementBody
+                   elementChildren
                ))
                break
            }
-           case TOKEN_TYPE.CLOSE_ELEMENT: break
+           case TOKEN_TYPE.CLOSE_ELEMENT: {
+            //    debugger
+               if (lexem.value === scopingElement.value) return children
+               break
+            }
            case TOKEN_TYPE.EOF: return children
            default: {
                throw new Error("Unknown Lexem type: " + lexem.type)
