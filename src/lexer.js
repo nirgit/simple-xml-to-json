@@ -1,6 +1,7 @@
 'use strict'
 
 const {Token, TOKEN_TYPE} = require('./model')
+const EOF_TOKEN = Token('EOF')
 
 const normalizeXMLForLexer = xmlAsString => {
     if (xmlAsString.startsWith('<?xml')) {
@@ -17,8 +18,8 @@ function createLexer(xmlAsString) {
     let currentToken = null
     let pos = 0
 
-    const current = () => currentToken
-    const hasNext = () => pos < xmlAsString.length
+    const peek = () => currentToken
+    const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
     const isBlankSpace = () => {
         const char = xmlAsString[pos]
         return char === " " || char === "\n" || char === "\r"
@@ -56,7 +57,7 @@ function createLexer(xmlAsString) {
     const next = () => {
         skipSpaces();
         if (!hasNext()) {
-            currentToken = Token('EOF')
+            currentToken = EOF_TOKEN
         } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets()
@@ -110,7 +111,7 @@ function createLexer(xmlAsString) {
     }
 
     return {
-        current,
+        peek,
         next,
         hasNext
     }
