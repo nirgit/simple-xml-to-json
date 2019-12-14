@@ -35,20 +35,21 @@ const buildJSONFromNode = node => {
     return json
 }
 
-const buildAttributes = attributes => buildJSONFromArrayNodes(attributes)
 const buildChildren = children => {
-    if (!children) return null
+    if (!children || !Array.isArray(children) || children.length === 0) return null
     if (isContentChildren(children)) {
         return {
             content: children[0].value
         }
     }
-    return buildJSONFromArrayNodes(children)
+    return {
+        children: children.map(buildJSONFromNode)
+    }
 }
 
 const isContentChildren = children => children && Array.isArray(children) && children.length === 1 && children[0].type === 'CONTENT'
 
-const buildJSONFromArrayNodes = arrayNodes => {
+const buildAttributes = arrayNodes => {
     if (arrayNodes && Array.isArray(arrayNodes)) {
         const jsonArray = arrayNodes.map(buildJSONFromNode)
         return jsonArray.reduce((agg, j) => Object.assign(agg, j), {})

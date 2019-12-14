@@ -182,20 +182,29 @@ describe('transpiler', () => {
                     a: {
                         a: "5",
                         b: "hello",
-                        empty: {},
-                        message: {
-                            content: "Hello JSON world"
-                        },
-                        specialMessage: {
-                            color: "purple",
-                            content: "Special Hello"
-                        },
-                        nested: {
+                        children: [{
+                            empty: {},
+                        }, {
                             message: {
-                                from: "sender",
-                                content: "Nested hello"
+                                content: "Hello JSON world"
                             }
-                        }
+                        },
+                        {
+                            specialMessage: {
+                                color: "purple",
+                                content: "Special Hello"
+                            }
+                        },
+                        {
+                            nested: {
+                                children: [{
+                                    message: {
+                                        from: "sender",
+                                        content: "Nested hello"
+                                    }
+                                }]
+                            }
+                        }]
                     }
                 }
                 const actualJSON = transpile(mockXML, astToJson)

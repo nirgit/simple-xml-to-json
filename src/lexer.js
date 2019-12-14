@@ -57,8 +57,8 @@ function createLexer(xmlAsString) {
         return readAlphaNumericChars(false)
     }
 
-    const readAlphaNumericChars = (isSpaceSupport) => {
-        const matcher = isSpaceSupport ? /[a-zA-Z0-9_\s]/ : /[a-zA-Z0-9_]/
+    const readAlphaNumericChars = (areSpecialCharsSupported) => {
+        const matcher = areSpecialCharsSupported ? /[a-zA-Z0-9_\s\.]/ : /[a-zA-Z0-9_]/
         let start = pos
         while (hasNext() && xmlAsString[pos].match(matcher)) pos++
         const buffer = xmlAsString.substring(start, pos)
