@@ -24,7 +24,7 @@ function createLexer(xmlAsString) {
     let currentToken = null
     let pos = 0
 
-    const peek = () => currentToken
+    const peek = () => xmlAsString[pos]
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
     const isBlankSpace = () => {
         const char = xmlAsString[pos]
@@ -54,8 +54,13 @@ function createLexer(xmlAsString) {
                 return buffer
             }
         }
+        return readAlphaNumericChars(false)
+    }
+
+    const readAlphaNumericChars = (isSpaceSupport) => {
+        const matcher = isSpaceSupport ? /[a-zA-Z0-9_\s]/ : /[a-zA-Z0-9_]/
         let start = pos
-        while (hasNext() && xmlAsString[pos].match(/[a-zA-Z0-9]/)) pos++
+        while (hasNext() && xmlAsString[pos].match(matcher)) pos++
         const buffer = xmlAsString.substring(start, pos)
         return buffer
     }
@@ -64,11 +69,11 @@ function createLexer(xmlAsString) {
         skipSpaces();
         if (!hasNext()) {
             currentToken = EOF_TOKEN
-        } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) {
+        } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) { // starting new element
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets()
             currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
-        } else if (currentToken && currentToken.type === TOKEN_TYPE.ASSIGN) {
+        } else if (currentToken && currentToken.type === TOKEN_TYPE.ASSIGN) { // assign value to attribute
             skipQuotes()
             let start = pos
             while (hasNext() && xmlAsString[pos] !== '"') pos++
@@ -100,7 +105,13 @@ function createLexer(xmlAsString) {
                 }
                 default: { // here we fall if we have alphanumeric string, which can be related to attributes or nothing
                     if (buffer && buffer.length > 0) {
-                        if (currentToken.type !== TOKEN_TYPE.ATTRIB_NAME) {
+                        if (currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) {
+                            let suffix = ''
+                            if (peek() !== '<') {
+                                suffix = readAlphaNumericChars(true)
+                            }
+                            currentToken = Token(TOKEN_TYPE.CONTENT, buffer + suffix)
+                        } else if (currentToken.type !== TOKEN_TYPE.ATTRIB_NAME) {
                             // it should be a value token
                             currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
                         }

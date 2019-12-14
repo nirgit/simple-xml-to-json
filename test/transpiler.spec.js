@@ -1,6 +1,9 @@
 'use strict'
 
 const {transpile, AttribNode, ElementNode} = require('../src/transpiler')
+const astToJson = require('../src/converters/astToJson')
+
+const XML_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'
 
 describe('transpiler', () => {
     describe('to AST', () => {
@@ -22,9 +25,30 @@ describe('transpiler', () => {
             })
         })
 
+        it('should convert a simple XML with content to a simple AST', () => {
+            const mockXML = '<a>Hello content</a>'
+            const ast = transpile(mockXML)
+            expect(ast).toEqual({
+                type: "ROOT",
+                value: {
+                    children: [{
+                        type: "ELEMENT",
+                        value: {
+                            type: "a",
+                            attributes: [],
+                            children: [{
+                                type: "CONTENT",
+                                value: "Hello content"
+                            }]
+                        }
+                    }]
+                }
+            })
+        })
+
         it('should convert a very simple XML to a simple AST with XML schema declaration', () => {
             const mockXML = `
-                <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+                ${XML_HEADER}
                 <a></a>
             `
             const ast = transpile(mockXML)
@@ -100,6 +124,83 @@ describe('transpiler', () => {
     })
 
     describe('to JSON', () => {
+        describe('simple XML', () => {
+            it('should transform a simple XML to JSON', () => {
+                const mockXML = '<a></a>'
+                const expectedJSON = {
+                    a: {}
+                }
+                const actualJSON = transpile(mockXML, astToJson)
+                expect(actualJSON).toEqual(expectedJSON)
+            })
+    
+            it('should transform a simple XML to JSON with an XML header', () => {
+                const mockXML = `
+                    ${XML_HEADER}
+                    <a></a>
+                `
+                const expectedJSON = {
+                    a: {}
+                }
+                const actualJSON = transpile(mockXML, astToJson)
+                expect(actualJSON).toEqual(expectedJSON)
+            })
+        })
         
+        describe('simple XML with attributes', () => {
+            it('should transform a simple XML to JSON with an XML header', () => {
+                const mockXML = `
+                    ${XML_HEADER}
+                    <a a="5" b="hello"></a>
+                `
+                const expectedJSON = {
+                    a: {
+                        a: "5",
+                        b: "hello"
+                    }
+                }
+                const actualJSON = transpile(mockXML, astToJson)
+                expect(actualJSON).toEqual(expectedJSON)
+            })
+        })
+
+        describe('XML with children', () => {
+            it('should transform the XML children to nested JSONs', () => {
+                const mockXML = `
+                    ${XML_HEADER}
+                    <a a="5" b="hello">
+                        <empty></empty>
+                        <message>Hello JSON world</message>
+                        <specialMessage color="purple">Special Hello</specialMessage>
+                        <nested>
+                            <message from="sender">Nested hello</message>
+                        </nested>
+                    </a>
+                `
+
+                const expectedJSON = {
+                    a: {
+                        a: "5",
+                        b: "hello",
+                        empty: {},
+                        message: {
+                            content: "Hello JSON world"
+                        },
+                        specialMessage: {
+                            color: "purple",
+                            content: "Special Hello"
+                        },
+                        nested: {
+                            message: {
+                                from: "sender",
+                                content: "Nested hello"
+                            }
+                        }
+                    }
+                }
+                const actualJSON = transpile(mockXML, astToJson)
+                expect(actualJSON).toEqual(expectedJSON)
+            })
+        })
     })
 })

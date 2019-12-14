@@ -31,6 +31,16 @@ describe('Lexer', () => {
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.EOF))
     })
 
+    it('should support textual content for elements', () => {
+        const tokenizer = lexer.createLexer("<a>Hello world</a>")
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.OPEN_BRACKET))
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ELEMENT_TYPE, 'a'))
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CLOSE_BRACKET))
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CONTENT, 'Hello world'))
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CLOSE_ELEMENT, 'a'))
+        expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.EOF))
+    })
+
     it('should support nesting', () => {
         const mockXML = `
             <a><b></b></a>
