@@ -4,15 +4,25 @@ const {Token, TOKEN_TYPE} = require('./model')
 const EOF_TOKEN = Token('EOF')
 
 const isCharBlank = char => char === " " || char === "\n" || char === "\r"
-
-const normalizeXMLForLexer = xmlAsString => {
-    let pos = 0
-    while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
+const removeXMLDocumentHeader = (xmlAsString, pos) => {
     xmlAsString = xmlAsString.substr(pos)
     if (xmlAsString.startsWith('<?xml')) {
         xmlAsString = xmlAsString.replace(/<\?xml.*\?>/, '')
     }
-    xmlAsString = xmlAsString.replace(/'/g, '"')
+    return xmlAsString;
+}
+
+const replaceQuotes = xmlAsString => xmlAsString.replace(/'/g, '"')
+const removeComments = xmlAsString => {
+    return xmlAsString.replace(/<!--[.\s\S]*?-->/g, '')
+}
+
+const normalizeXMLForLexer = xmlAsString => {
+    let pos = 0
+    while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
+    xmlAsString = removeXMLDocumentHeader(xmlAsString, pos)
+    xmlAsString = replaceQuotes(xmlAsString)
+    xmlAsString = removeComments(xmlAsString)
 
     return xmlAsString
 }
@@ -20,7 +30,7 @@ const normalizeXMLForLexer = xmlAsString => {
 function createLexer(xmlAsString) {
 
     xmlAsString = normalizeXMLForLexer(xmlAsString)
-    
+
     let currentToken = null
     let pos = 0
 

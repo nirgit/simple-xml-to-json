@@ -16,6 +16,43 @@ describe('Lexer', () => {
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.EOF))
     })
 
+    it('should ignore single line comments', () => {
+        const tokenizer = lexer.createLexer(`
+            <!-- simple comment! -->
+            <a></a>
+        `)
+        const expectedTokensOrder = [
+            Token(TOKEN_TYPE.OPEN_BRACKET),
+            Token(TOKEN_TYPE.ELEMENT_TYPE, 'a'),
+            Token(TOKEN_TYPE.CLOSE_BRACKET),
+            Token(TOKEN_TYPE.CLOSE_ELEMENT, 'a'),
+            Token(TOKEN_TYPE.EOF)
+        ]
+        expectedTokensOrder.forEach(token => {
+            expect(tokenizer.next()).toEqual(token)
+        })
+    })
+
+    it('should ignore multi-line comments', () => {
+        const tokenizer = lexer.createLexer(`
+            <!--
+                line 1 - comment foo
+                line 2 - comment bar
+            -->
+            <a></a>
+        `)
+        const expectedTokensOrder = [
+            Token(TOKEN_TYPE.OPEN_BRACKET),
+            Token(TOKEN_TYPE.ELEMENT_TYPE, 'a'),
+            Token(TOKEN_TYPE.CLOSE_BRACKET),
+            Token(TOKEN_TYPE.CLOSE_ELEMENT, 'a'),
+            Token(TOKEN_TYPE.EOF)
+        ]
+        expectedTokensOrder.forEach(token => {
+            expect(tokenizer.next()).toEqual(token)
+        })
+    })
+
     it('Lexing attributes', () => {
         const tokenizer = lexer.createLexer("<a p1='v1' p2='v2'></a>")
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.OPEN_BRACKET))
@@ -69,7 +106,7 @@ describe('Lexer', () => {
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.OPEN_BRACKET))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ELEMENT_TYPE, 'parent'))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CLOSE_BRACKET))
-        
+
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.OPEN_BRACKET))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ELEMENT_TYPE, 'child'))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ATTRIB_NAME, 'name'))
@@ -77,7 +114,7 @@ describe('Lexer', () => {
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ATTRIB_VALUE, 'Foo'))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CLOSE_BRACKET))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.CLOSE_ELEMENT, 'child'))
-        
+
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.OPEN_BRACKET))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ELEMENT_TYPE, 'child'))
         expect(tokenizer.next()).toEqual(Token(TOKEN_TYPE.ATTRIB_NAME, 'name'))
