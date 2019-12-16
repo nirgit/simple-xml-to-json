@@ -1,5 +1,6 @@
 # A simple XML to JSON converter library
 * Note - _this is an *alpha* version. Use at your own discretion_.
+[![Build Status](https://travis-ci.org/nirgit/xml-to-json.svg?branch=master)](https://travis-ci.org/nirgit/xml-to-json)
 
 ## How this works in a nutshell
 1. The library converts the XML to an AST
