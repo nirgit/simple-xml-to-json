@@ -16,7 +16,13 @@
 ## Current Drawbacks
 1. No support for XSD
 2. All values are translated to strings in JSON
-3. There are currently reserved words in the JSON converter like "content" so you cannot have an attribute with that name and free text as the content of the element
+3. There are currently reserved words in the JSON converter: 
+    * "content" 
+    * "children"
+
+    so you cannot by default have an attribute with that name and free text as the content of the element or have nested elements as children.
+    
+    *If you need to, you can write your own converter from the AST created by the parser, and pass it as a 2nd parameter after the xml string*
 
 ## Future plans
 1. Split the implementation of this library to XML-TO-AST and AST-TO-JSON to make it more modular
