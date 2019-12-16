@@ -6,14 +6,15 @@
   "scripts": {
     "test": "npx jest"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nirgit/xml-to-json.git"
   },
   "keywords": [
     "xml",
     "json"
   ],
-  "author": "Nir Moav (getnirm@gmail.com)",
+  "author": "Nir Moav <getnirm@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "chalk": "^3.0.0",
