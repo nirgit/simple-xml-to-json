@@ -13,7 +13,7 @@
             <color_swatch image="red_cardigan.jpg">Red</color_swatch>
             <color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
          </size>
-         <size description="Large">
+         <size description="Large"><!---->
             <color_swatch image="red_cardigan.jpg">Red</color_swatch>
             <color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
          </size>

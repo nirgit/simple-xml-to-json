@@ -1,9 +1,10 @@
 {
   "name": "simple-xml-to-json",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple lightweight library converting XML schema to JSON",
   "main": "src/xmlToJson.js",
   "scripts": {
+    "example": "node example/example.js",
     "test": "npx jest"
   },
   "repository": {

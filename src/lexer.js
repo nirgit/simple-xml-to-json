@@ -13,16 +13,12 @@ const removeXMLDocumentHeader = (xmlAsString, pos) => {
 }
 
 const replaceQuotes = xmlAsString => xmlAsString.replace(/'/g, '"')
-const removeComments = xmlAsString => {
-    return xmlAsString.replace(/<!--[.\s\S]*?-->/g, '')
-}
 
 const normalizeXMLForLexer = xmlAsString => {
     let pos = 0
     while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
     xmlAsString = removeXMLDocumentHeader(xmlAsString, pos)
     xmlAsString = replaceQuotes(xmlAsString)
-    xmlAsString = removeComments(xmlAsString)
 
     return xmlAsString
 }
@@ -55,7 +51,15 @@ function createLexer(xmlAsString) {
                 pos++
                 if (hasNext() && xmlAsString[pos] === '/') {
                     pos++
-                    buffer += '/'
+                    buffer = '</'
+                } else if (hasNext() && 
+                            xmlAsString[pos] === '!' && 
+                            xmlAsString[pos + 1] === '-' && 
+                            xmlAsString[pos + 2] === '-') { // its a comment
+                    pos++
+                    pos++
+                    pos++
+                    buffer = '<!--'
                 }
                 return buffer
             } else if (xmlAsString[pos] === '=' || xmlAsString[pos] === '>') {
@@ -103,7 +107,20 @@ function createLexer(xmlAsString) {
                     while (xmlAsString[pos] !== ">") pos++
                     currentToken = Token(TOKEN_TYPE.CLOSE_ELEMENT, xmlAsString.substring(start, pos))
                     pos++ // skip the ">"
-                    break;
+                    break
+                }
+                case "<!--": {
+                    // skipComment contents
+                    const closingBuff = ['!', '-', '-']
+                    while (hasNext() && 
+                        (closingBuff[2] !== '>' || 
+                        closingBuff[1] !== '-' || 
+                        closingBuff[0] !== '-')) {
+                        closingBuff.shift()
+                        closingBuff.push(xmlAsString[pos])
+                        pos++
+                    }
+                    return next()
                 }
                 case ">": {
                     currentToken = Token(TOKEN_TYPE.CLOSE_BRACKET)
@@ -111,7 +128,7 @@ function createLexer(xmlAsString) {
                 }
                 case "<": {
                     currentToken = Token(TOKEN_TYPE.OPEN_BRACKET)
-                    break;
+                    break
                 }
                 default: { // here we fall if we have alphanumeric string, which can be related to attributes or nothing
                     if (buffer && buffer.length > 0) {
