@@ -1,6 +1,6 @@
 {
   "name": "simple-xml-to-json",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple lightweight library converting XML schema to JSON",
   "main": "src/xmlToJson.js",
   "scripts": {
@@ -11,8 +11,11 @@
     "url": "https://github.com/nirgit/xml-to-json.git"
   },
   "keywords": [
+    "ast",
     "xml",
-    "json"
+    "json",
+    "lightweight",
+    "simple"
   ],
   "author": "Nir Moav <getnirm@gmail.com>",
   "license": "MIT",

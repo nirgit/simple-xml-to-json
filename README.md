@@ -7,7 +7,20 @@
 2. There is a JSON converter that takes the AST and spits out a JSON
 3. You can write your own converters if you need XML-to-ANY-OTHER-FORMAT
 
-## Notes and how to use
+## API
+1. convertXML
+2. createAST
+
+Code Example:
+```javascript
+const {convertXML, createAST} = require("simple-xml-to-json")
+
+const myJson = convertXML(myXMLString)
+const myYaml = convertXML(myXMLString, yamlConverter)
+const myAst = createAST(myXMLString)
+````
+
+## Notes and how to use code
 1. The easiest thing to start is to run `node example/example.js` in your terminal and see what happens.
 2. There's the xmlToJson.js file for convenience. Just pass in the XML as a String.
 3. It's MIT licensed so you can do whatever :)

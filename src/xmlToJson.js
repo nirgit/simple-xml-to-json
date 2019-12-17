@@ -3,8 +3,15 @@
 const jsonConverter = require('./converters/astToJson')
 const {transpile} = require('./transpiler')
 
-function run(xmlAsString, converter) {
-    return transpile(xmlAsString, converter || jsonConverter)
+function convertXML(xmlAsString, customConverter) {
+    return transpile(xmlAsString, customConverter || jsonConverter)
 }
 
-module.exports = run
+function createAST(xmlAsString) {
+    return transpile(xmlAsString)
+}
+
+module.exports = {
+    convertXML,
+    createAST
+}
