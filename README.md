@@ -1,5 +1,5 @@
 # A simple XML to JSON converter library
-* Note - _this is an *alpha* version. Use at your own discretion_.
+* Note - _this is an *beta* version. Use at your own discretion_.
 [![Build Status](https://travis-ci.org/nirgit/xml-to-json.svg?branch=master)](https://travis-ci.org/nirgit/xml-to-json)
 [![npm version](https://img.shields.io/npm/v/simple-xml-to-json.svg?style=flat-square)](https://www.npmjs.com/package/simple-xml-to-json)
 
