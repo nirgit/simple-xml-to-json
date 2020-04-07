@@ -211,5 +211,35 @@ describe('transpiler', () => {
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
+
+        describe('Special characters', () => {
+            describe('XML attributes with characters', () => {
+                it('should transform the XML to JSON when {:, -} chars are in attribute name', () => {
+                    const mockXML = '<a attrib:n1="v1" attrib-n2="v2">content</a>'
+                    const expectedJSON = {
+                        a: {
+                            "attrib:n1": "v1",
+                            "attrib-n2": "v2",
+                            content: "content"
+                        }
+                    }
+                    const actualJSON = transpile(mockXML, astToJson)
+                    expect(actualJSON).toEqual(expectedJSON)
+                })
+            })
+            
+            describe('XML content with characters', () => {
+                it('should transform the XML to JSON supporting chars - {:, /, -, +, "," }', () => {
+                    const mockXML = '<link>https://www.acme.com/abc/A-B_C,d+E/</link>'
+                    const expectedJSON = {
+                        link: {
+                            content: "https://www.acme.com/abc/A-B_C,d+E/"
+                        }
+                    }
+                    const actualJSON = transpile(mockXML, astToJson)
+                    expect(actualJSON).toEqual(expectedJSON)
+                })
+            })
+        })
     })
 })
