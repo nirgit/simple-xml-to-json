@@ -227,13 +227,24 @@ describe('transpiler', () => {
                     expect(actualJSON).toEqual(expectedJSON)
                 })
             })
-            
+
             describe('XML content with characters', () => {
                 it('should transform the XML to JSON supporting chars - {:, /, -, +, "," }', () => {
                     const mockXML = '<link>https://www.acme.com/abc/A-B_C,d+E/</link>'
                     const expectedJSON = {
                         link: {
                             content: "https://www.acme.com/abc/A-B_C,d+E/"
+                        }
+                    }
+                    const actualJSON = transpile(mockXML, astToJson)
+                    expect(actualJSON).toEqual(expectedJSON)
+                })
+
+                it('should transform the XML to JSON supporting unicode chars', () => {
+                    const mockXML = '<link>á</link>'
+                    const expectedJSON = {
+                        link: {
+                            content: "á"
                         }
                     }
                     const actualJSON = transpile(mockXML, astToJson)

@@ -44,7 +44,7 @@ function createLexer(xmlAsString) {
         while (hasNext() && isBlankSpace()) pos++
     }
 
-    const readAlphaNumericCharsOrBrackets = () => {
+    const readAlphaNumericCharsOrBrackets = (areSpecialCharsSupported) => {
         if (hasNext()) {
             if (xmlAsString[pos] === '<') {
                 let buffer = '<'
@@ -68,11 +68,13 @@ function createLexer(xmlAsString) {
                 return buffer
             }
         }
-        return readAlphaNumericChars(false)
+        return readAlphaNumericChars(!!areSpecialCharsSupported)
     }
 
     const readAlphaNumericChars = (areSpecialCharsSupported) => {
-        const matcher = areSpecialCharsSupported ? /[a-zA-Z0-9_\s\.:\/\-+,]/ : /[a-zA-Z0-9_:\-]/
+        const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:\-]/
+        const NAMES_VALS_CONTENT_MATCHER = /[0-9_\s\.:\/\-+,\p{M}\p{P}\p{L}]/u
+        const matcher = areSpecialCharsSupported ? NAMES_VALS_CONTENT_MATCHER : ELEMENT_TYPE_MATCHER
         let start = pos
         while (hasNext() && xmlAsString[pos].match(matcher)) pos++
         const buffer = xmlAsString.substring(start, pos)
@@ -85,7 +87,7 @@ function createLexer(xmlAsString) {
             currentToken = EOF_TOKEN
         } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) { // starting new element
             skipSpaces()
-            const buffer = readAlphaNumericCharsOrBrackets()
+            const buffer = readAlphaNumericCharsOrBrackets(false)
             currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
         } else if (currentToken && currentToken.type === TOKEN_TYPE.ASSIGN) { // assign value to attribute
             skipQuotes()
@@ -96,7 +98,7 @@ function createLexer(xmlAsString) {
             currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
         } else {
             skipSpaces()
-            const buffer = readAlphaNumericCharsOrBrackets()
+            const buffer = readAlphaNumericCharsOrBrackets(true)
             switch (buffer) {
                 case "=": {
                     currentToken = Token(TOKEN_TYPE.ASSIGN)
