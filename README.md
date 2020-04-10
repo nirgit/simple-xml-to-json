@@ -1,14 +1,14 @@
-# A simple XML to JSON converter library
-* Note - _this is an *beta* version. Use at your own discretion_.
+# A simple XML to JSON converter
+* Note - _this is an *beta*. Use at your own discretion_.
 [![Build Status](https://travis-ci.org/nirgit/xml-to-json.svg?branch=master)](https://travis-ci.org/nirgit/xml-to-json)
 [![npm version](https://img.shields.io/npm/v/simple-xml-to-json.svg?style=flat-square)](https://www.npmjs.com/package/simple-xml-to-json)
 
-## How this works in a nutshell
-1. The library converts the XML to an AST
-2. There is a JSON converter that takes the AST and spits out a JSON
-3. You can write your own converters if you need XML-to-ANY-OTHER-FORMAT
+## Install
+Simply install using NPM in your project directory
+> npm install simple-xml-to-json
 
-## API
+
+## Usage and API
 1. convertXML
 2. createAST
 
@@ -26,6 +26,11 @@ const myAst = createAST(myXMLString)
 2. There's the xmlToJson.js file for convenience. Just pass in the XML as a String.
 3. It's MIT licensed so you can do whatever :)
 4. Profit
+
+## How this works in a nutshell
+1. The library converts the XML to an AST
+2. There is a JSON converter that takes the AST and spits out a JSON
+3. You can write your own converters if you need XML-to-ANY-OTHER-FORMAT
 
 ## Current Drawbacks
 1. No support for XSD
