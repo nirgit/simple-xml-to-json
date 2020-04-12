@@ -11,7 +11,7 @@
   ],
   "homepage": "https://github.com/nirgit/xml-to-json",
   "license": "MIT",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "Nir Moav <getnirm@gmail.com>",
   "main": "src/xmlToJson.js",
   "scripts": {
