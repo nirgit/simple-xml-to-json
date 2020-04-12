@@ -9,8 +9,14 @@ Simply install using NPM in your project directory
 
 
 ## Usage and API
-1. convertXML
-2. createAST
+### 1. convertXML(xmlToConvert [,customConverter])
+   * `xmlToConvert` \<string\>
+   * `customConverter` \<function\>
+   * Returns: \<JSON\> by default or other if `customConverter` is used
+   
+### 2. createAST(xmlToConvert)
+   * `xmlToConvert` \<string\>
+   * Returns: An AST representation of the XML \<JSON\>
 
 Code Example:
 ```javascript
@@ -23,7 +29,7 @@ const myAst = createAST(myXMLString)
 
 ## Notes and how to use code
 1. The easiest thing to start is to run `node example/example.js` in your terminal and see what happens.
-2. There's the xmlToJson.js file for convenience. Just pass in the XML as a String.
+2. There's the `xmlToJson.js` file for convenience. Just pass in the XML as a String.
 3. It's MIT licensed so you can do whatever :)
 4. Profit
 
