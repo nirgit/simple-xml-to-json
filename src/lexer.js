@@ -73,7 +73,7 @@ function createLexer(xmlAsString) {
 
     const readAlphaNumericChars = (areSpecialCharsSupported) => {
         const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:\-]/
-        const NAMES_VALS_CONTENT_MATCHER = /[0-9_\s\.:\/\-\+,\p{M}\p{P}\p{L}]/u
+        const NAMES_VALS_CONTENT_MATCHER = /[0-9_\s\.:\/\-\+\$~\|\^,\p{M}\p{P}\p{L}]/u
         const matcher = areSpecialCharsSupported ? NAMES_VALS_CONTENT_MATCHER : ELEMENT_TYPE_MATCHER
         let start = pos
         while (hasNext() && xmlAsString[pos].match(matcher)) pos++
@@ -81,15 +81,18 @@ function createLexer(xmlAsString) {
         return buffer
     }
 
+    const isElementBegin = () => currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET
+    const isAssignToAttribute = () => currentToken && currentToken.type === TOKEN_TYPE.ASSIGN
+
     const next = () => {
         skipSpaces();
         if (!hasNext()) {
             currentToken = EOF_TOKEN
-        } else if (currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET) { // starting new element
+        } else if (isElementBegin()) { // starting new element
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets(false)
             currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
-        } else if (currentToken && currentToken.type === TOKEN_TYPE.ASSIGN) { // assign value to attribute
+        } else if (isAssignToAttribute()) { // assign value to attribute
             skipQuotes()
             let start = pos
             while (hasNext() && xmlAsString[pos] !== '"') pos++
@@ -101,7 +104,11 @@ function createLexer(xmlAsString) {
             const buffer = readAlphaNumericCharsOrBrackets(true)
             switch (buffer) {
                 case "=": {
-                    currentToken = Token(TOKEN_TYPE.ASSIGN)
+                    if (currentToken.type === TOKEN_TYPE.ATTRIB_NAME) {
+                        currentToken = Token(TOKEN_TYPE.ASSIGN)
+                    } else {
+                        currentToken = Token(TOKEN_TYPE.CONTENT, buffer)
+                    }
                     break;
                 }
                 case "</": {
@@ -132,7 +139,7 @@ function createLexer(xmlAsString) {
                     currentToken = Token(TOKEN_TYPE.OPEN_BRACKET)
                     break
                 }
-                default: { // here we fall if we have alphanumeric string, which can be related to attributes or nothing
+                default: { // here we fall if we have alphanumeric string, which can be related to attributes, content or nothing
                     if (buffer && buffer.length > 0) {
                         if (currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) {
                             let suffix = ''
@@ -140,13 +147,15 @@ function createLexer(xmlAsString) {
                                 suffix = readAlphaNumericChars(true)
                             }
                             currentToken = Token(TOKEN_TYPE.CONTENT, buffer + suffix)
-                        } else if (currentToken.type !== TOKEN_TYPE.ATTRIB_NAME) {
-                            // it should be a value token
+                        } else if (currentToken.type !== TOKEN_TYPE.ATTRIB_NAME && currentToken.type !== TOKEN_TYPE.CONTENT) {
+                            // it should be an attribute name token
                             currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
+                        } else {
+                            currentToken = Token(TOKEN_TYPE.CONTENT, buffer)
                         }
                         break;
                     } else {
-                        const errMsg = 'Unknown Syntax : "' + buffer + '"'
+                        const errMsg = 'Unknown Syntax : "' + xmlAsString[pos] + '"'
                         throw new Error(errMsg)
                     }
                 }

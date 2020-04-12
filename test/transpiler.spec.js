@@ -24,7 +24,7 @@ describe('transpiler', () => {
                 }
             })
         })
-
+        
         it('should convert a simple XML with content to a simple AST', () => {
             const mockXML = '<a>Hello content</a>'
             const ast = transpile(mockXML)
@@ -45,11 +45,11 @@ describe('transpiler', () => {
                 }
             })
         })
-
+        
         it('should convert a very simple XML to a simple AST with XML schema declaration', () => {
             const mockXML = `
-                ${XML_HEADER}
-                <a></a>
+            ${XML_HEADER}
+            <a></a>
             `
             const ast = transpile(mockXML)
             expect(ast).toEqual({
@@ -66,7 +66,7 @@ describe('transpiler', () => {
                 }
             })
         })
-    
+        
         it('should convert a simple xml element with attributes to AST', () => {
             const mockXML = '<a p1="v1" p2="v2"></a>'
             const ast = transpile(mockXML)
@@ -84,15 +84,15 @@ describe('transpiler', () => {
                 }
             })
         })
-    
+        
         it('should convert a full XML to AST', () => {
             const mockXML = `
             <a ap1="av1" ap2="av2">
-                <b bp1='bv1'></b>
-                <b bp2='bv2'></b>
-                <b bp3='bv3'>
-                    <c cp1='cv1' cp2='cv2'></c>
-                </b>
+            <b bp1='bv1'></b>
+            <b bp2='bv2'></b>
+            <b bp3='bv3'>
+            <c cp1='cv1' cp2='cv2'></c>
+            </b>
             </a>
             `
             const ast = transpile(mockXML)
@@ -122,7 +122,7 @@ describe('transpiler', () => {
             })
         })
     })
-
+    
     describe('to JSON', () => {
         describe('simple XML', () => {
             it('should transform a simple XML to JSON', () => {
@@ -133,11 +133,11 @@ describe('transpiler', () => {
                 const actualJSON = transpile(mockXML, astToJson)
                 expect(actualJSON).toEqual(expectedJSON)
             })
-    
+            
             it('should transform a simple XML to JSON with an XML header', () => {
                 const mockXML = `
-                    ${XML_HEADER}
-                    <a></a>
+                ${XML_HEADER}
+                <a></a>
                 `
                 const expectedJSON = {
                     a: {}
@@ -150,8 +150,8 @@ describe('transpiler', () => {
         describe('simple XML with attributes', () => {
             it('should transform a simple XML to JSON with an XML header', () => {
                 const mockXML = `
-                    ${XML_HEADER}
-                    <a a="5" b="hello"></a>
+                ${XML_HEADER}
+                <a a="5" b="hello"></a>
                 `
                 const expectedJSON = {
                     a: {
@@ -163,21 +163,21 @@ describe('transpiler', () => {
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
-
+        
         describe('XML with children', () => {
             it('should transform the XML children to nested JSONs', () => {
                 const mockXML = `
-                    ${XML_HEADER}
-                    <a a="5" b="hello">
-                        <empty></empty>
-                        <message>Hello JSON world</message>
-                        <specialMessage color="purple">Special Hello</specialMessage>
-                        <nested>
-                            <message from="sender">Nested hello</message>
-                        </nested>
-                    </a>
+                ${XML_HEADER}
+                <a a="5" b="hello">
+                <empty></empty>
+                <message>Hello JSON world</message>
+                <specialMessage color="purple">Special Hello</specialMessage>
+                <nested>
+                <message from="sender">Nested hello</message>
+                </nested>
+                </a>
                 `
-
+                
                 const expectedJSON = {
                     a: {
                         a: "5",
@@ -211,7 +211,7 @@ describe('transpiler', () => {
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
-
+        
         describe('Special characters', () => {
             describe('XML attributes with characters', () => {
                 it('should transform the XML to JSON when {:, -} chars are in attribute name', () => {
@@ -227,7 +227,7 @@ describe('transpiler', () => {
                     expect(actualJSON).toEqual(expectedJSON)
                 })
             })
-
+            
             describe('XML content with characters', () => {
                 it('should transform the XML to JSON supporting chars - {:, /, -, +, "," }', () => {
                     const mockXML = '<link>https://www.acme.com/abc/A-B_C,d+E/</link>'
@@ -239,12 +239,78 @@ describe('transpiler', () => {
                     const actualJSON = transpile(mockXML, astToJson)
                     expect(actualJSON).toEqual(expectedJSON)
                 })
-
+                
                 it('should transform the XML to JSON supporting unicode chars', () => {
                     const mockXML = '<link>á</link>'
                     const expectedJSON = {
                         link: {
                             content: "á"
+                        }
+                    }
+                    const actualJSON = transpile(mockXML, astToJson)
+                    expect(actualJSON).toEqual(expectedJSON)
+                })
+                
+                it('should transform a random XML to JSON without failing', () => {
+                    const mockXML = `
+                    <?xml version="1.0" encoding="UTF-8" ?>
+                    <root>
+                        <HDshFn2rCQZMG>
+                            <k>K[</k>
+                            <c8s3k least="saw">
+                                <o1DU education="trade">_Su&gt;%Z8</o1DU>
+                                <u8JYzwdeWwGn>1673963950.2489343</u8JYzwdeWwGn>
+                            </c8s3k>
+                            <yI1dht0 opportunity="look">&lt;&amp;RY~HyxRC&lt;d{</yI1dht0>
+                        </HDshFn2rCQZMG>
+                        <R9Z28 train="please">a=b.JD&amp;m3&gt;vP.AG</R9Z28>
+                    </root>
+                    `
+                    const expectedJSON = {
+                        "root": {
+                            "children": [
+                            {
+                                "HDshFn2rCQZMG": {
+                                "children": [
+                                    {
+                                    "k": {
+                                        "content": "K["
+                                    }
+                                    },
+                                    {
+                                    "c8s3k": {
+                                        "least": "saw",
+                                        "children": [
+                                        {
+                                            "o1DU": {
+                                            "education": "trade",
+                                            "content": "_Su&gt;%Z8"
+                                            }
+                                        },
+                                        {
+                                            "u8JYzwdeWwGn": {
+                                            "content": "1673963950.2489343"
+                                            }
+                                        }
+                                        ]
+                                    }
+                                    },
+                                    {
+                                    "yI1dht0": {
+                                        "opportunity": "look",
+                                        "content": "&lt;&amp;RY~HyxRC&lt;d{"
+                                    }
+                                    }
+                                ]
+                                }
+                            },
+                            {
+                                "R9Z28": {
+                                "train": "please",
+                                "content": "a=b.JD&amp;m3&gt;vP.AG"
+                                }
+                            }
+                            ]
                         }
                     }
                     const actualJSON = transpile(mockXML, astToJson)

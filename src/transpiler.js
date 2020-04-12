@@ -54,7 +54,10 @@ const parseExpr = (lexer, scopingElement) => {
             case TOKEN_TYPE.OPEN_BRACKET: {
                 const elementLexem = lexer.next()
                 const elementAttributes = parseElementAttributes(lexer)
-                const elementChildren = parseExpr(lexer, elementLexem)
+                let elementChildren = parseExpr(lexer, elementLexem)
+                if (elementChildren && elementChildren.length > 0 && elementChildren[0].type === TOKEN_TYPE.CONTENT) {
+                    elementChildren = [ContentNode(elementChildren.map(elc => elc.value).join(''))]
+                }
                 children.push(ElementNode(
                     elementLexem.value,
                     elementAttributes,
