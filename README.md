@@ -40,10 +40,11 @@ const myAst = createAST(myXMLString)
 
 ## Benchmark
 
-According to a benchmark test I performed in __April 2020__.
+_Take these results with a grain of salt._\
+According to a __simple__ benchmark test I performed in __April 2020__ with a random XML. _YMMV_.
 ![Benchmark Chart](https://github.com/nirgit/assets/blob/master/simple-xml-to-json/simple-xml-to-json-benchmark.png?raw=true)
 
-* The chart results __may be__ outdated, so you can run the test yourself [here](https://runkit.com/nirgit/simple-xml-to-json-benchmark)
+* The chart results __may be__ outdated. [Run the test yourself](https://runkit.com/nirgit/simple-xml-to-json-benchmark)
 
 
 ## Current Drawbacks
