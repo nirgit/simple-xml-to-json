@@ -38,6 +38,14 @@ const myAst = createAST(myXMLString)
 2. There is a JSON converter that takes the AST and spits out a JSON
 3. You can write your own converters if you need XML-to-ANY-OTHER-FORMAT
 
+## Benchmark
+
+According to a benchmark test I performed in __April 2020__.
+![Benchmark Chart](https://github.com/nirgit/assets/blob/master/simple-xml-to-json/simple-xml-to-json-benchmark.png?raw=true)
+
+* The chart results __may be__ outdated, so you can run the test yourself [here](https://runkit.com/nirgit/simple-xml-to-json-benchmark)
+
+
 ## Current Drawbacks
 1. No support for XSD
 2. All values are translated to strings in JSON
