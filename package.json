@@ -13,6 +13,11 @@
   "license": "MIT",
   "version": "1.0.7",
   "author": "Nir Moav <getnirm@gmail.com>",
+  "contributors": [{
+    "name": "Nir Moav",
+    "email": "getnirm@gmail.com",
+    "url": "https://nirgit.github.io/"
+  }],
   "main": "src/xmlToJson.js",
   "scripts": {
     "example": "node example/example.js",
@@ -22,9 +27,16 @@
     "type": "git",
     "url": "https://github.com/nirgit/simple-xml-to-json.git"
   },  
+  "bugs": {
+    "url": "https://github.com/nirgit/simple-xml-to-json/issues"
+  },
+  "dependencies": {},
   "devDependencies": {
     "kind-of": ">=6.0.3",
     "chalk": "^3.0.0",
     "jest": "^24.9.0"
+  },
+  "engines": {
+    "node": ">=10.18.0"
   }
 }
