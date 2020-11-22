@@ -57,8 +57,3 @@ According to a __simple__ benchmark test I performed in __April 2020__ with a ra
     so you cannot by default have an attribute with that name and free text as the content of the element or have nested elements as children.
     
     *If you need to, you can write your own converter from the AST created by the parser, and pass it as a 2nd parameter after the xml string*
-
-## Future plans
-1. Split the implementation of this library to XML-TO-AST and AST-TO-JSON to make it more modular
-2. Support XSD (maybe :) )
-
