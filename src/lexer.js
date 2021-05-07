@@ -32,13 +32,10 @@ function createLexer(xmlAsString) {
 
     const peek = () => xmlAsString[pos]
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
-    const isBlankSpace = () => {
-        const char = xmlAsString[pos]
-        return isCharBlank(char)
-    }
+    const isBlankSpace = () => isCharBlank(peek())
 
     const skipQuotes = () => {
-        if (hasNext() && xmlAsString[pos] === '"') pos++
+        if (hasNext() && peek() === '"') pos++
     }
     const skipSpaces = () => {
         while (hasNext() && isBlankSpace()) pos++
@@ -46,14 +43,14 @@ function createLexer(xmlAsString) {
 
     const readAlphaNumericCharsOrBrackets = (areSpecialCharsSupported) => {
         if (hasNext()) {
-            if (xmlAsString[pos] === '<') {
+            if (peek() === '<') {
                 let buffer = '<'
                 pos++
-                if (hasNext() && xmlAsString[pos] === '/') {
+                if (hasNext() && peek() === '/') {
                     pos++
                     buffer = '</'
                 } else if (hasNext() && 
-                            xmlAsString[pos] === '!' && 
+                            peek() === '!' &&
                             xmlAsString[pos + 1] === '-' && 
                             xmlAsString[pos + 2] === '-') { // its a comment
                     pos++
@@ -62,8 +59,8 @@ function createLexer(xmlAsString) {
                     buffer = '<!--'
                 }
                 return buffer
-            } else if (xmlAsString[pos] === '=' || xmlAsString[pos] === '>') {
-                const buffer = xmlAsString[pos]
+            } else if (peek() === '=' || peek() === '>') {
+                const buffer = peek()
                 pos++
                 return buffer
             }
@@ -76,7 +73,7 @@ function createLexer(xmlAsString) {
         const NAMES_VALS_CONTENT_MATCHER = /[0-9_\s\.:\/\-\+\$~\|\^,\p{M}\p{P}\p{L}]/u
         const matcher = areSpecialCharsSupported ? NAMES_VALS_CONTENT_MATCHER : ELEMENT_TYPE_MATCHER
         let start = pos
-        while (hasNext() && xmlAsString[pos].match(matcher)) pos++
+        while (hasNext() && peek().match(matcher)) pos++
         const buffer = xmlAsString.substring(start, pos)
         return buffer
     }
@@ -95,7 +92,7 @@ function createLexer(xmlAsString) {
         } else if (isAssignToAttribute()) { // assign value to attribute
             skipQuotes()
             let start = pos
-            while (hasNext() && xmlAsString[pos] !== '"') pos++
+            while (hasNext() && peek() !== '"') pos++
             const buffer = xmlAsString.substring(start, pos)
             pos++
             currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
@@ -113,7 +110,7 @@ function createLexer(xmlAsString) {
                 }
                 case "</": {
                     const start = pos
-                    while (xmlAsString[pos] !== ">") pos++
+                    while (peek() !== ">") pos++
                     currentToken = Token(TOKEN_TYPE.CLOSE_ELEMENT, xmlAsString.substring(start, pos))
                     pos++ // skip the ">"
                     break
@@ -126,7 +123,7 @@ function createLexer(xmlAsString) {
                         closingBuff[1] !== '-' || 
                         closingBuff[0] !== '-')) {
                         closingBuff.shift()
-                        closingBuff.push(xmlAsString[pos])
+                        closingBuff.push(peek())
                         pos++
                     }
                     return next()
@@ -155,7 +152,7 @@ function createLexer(xmlAsString) {
                         }
                         break;
                     } else {
-                        const errMsg = 'Unknown Syntax : "' + xmlAsString[pos] + '"'
+                        const errMsg = 'Unknown Syntax : "' + peek() + '"'
                         throw new Error(errMsg)
                     }
                 }
