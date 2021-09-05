@@ -1,6 +1,6 @@
 'use strict'
 
-const fs = require('fs')
+const testUtils = require('./testUtils')
 const lexer = require('../src/lexer')
 const {Token, TOKEN_TYPE} = require('../src/model')
 
@@ -98,7 +98,7 @@ describe('Lexer', () => {
 
     it('should tokenize a real XML file', () => {
         const readXMLFile = fileName => {
-            return fs.readFileSync(fileName, {encoding: 'utf8'})
+            return testUtils.readXMLFile(fileName)
         }
 
         const xmlFileToTest = readXMLFile(__dirname + '/mock.xml')
