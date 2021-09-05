@@ -1,5 +1,6 @@
 'use strict'
 
+const testUtils = require('./testUtils');
 const {transpile, AttribNode, ElementNode} = require('../src/transpiler')
 const astToJson = require('../src/converters/astToJson')
 
@@ -314,6 +315,26 @@ describe('transpiler', () => {
                         }
                     }
                     const actualJSON = transpile(mockXML, astToJson)
+                    expect(actualJSON).toEqual(expectedJSON)
+                })
+            })
+
+            describe('XML content with "\t" (tabs) ', () => {
+                it('should succeed transforming the XML to JSON (based on issue#10 - tab char after new line)', () => {
+                    const mockXML = testUtils.readXMLFile(__dirname + '/mock-with-tabs.xml')
+                    const actualJSON = transpile(mockXML, astToJson)
+                    const expectedJSON = {
+                        "testng-results": {
+                            ignored: "20",
+                            total: "40",
+                            passed: "8",
+                            failed: "11",
+                            skipped: "1",
+                            children: [{
+                                "reporter-output": {}
+                            }]
+                        }
+                    }
                     expect(actualJSON).toEqual(expectedJSON)
                 })
             })
