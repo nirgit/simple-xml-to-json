@@ -3,7 +3,7 @@
 const {Token, TOKEN_TYPE} = require('./model')
 const EOF_TOKEN = Token('EOF')
 
-const isCharBlank = char => char === " " || char === "\n" || char === "\r"
+const isCharBlank = char => char === " " || char === "\n" || char === "\r" || char === "\t"
 const removeXMLDocumentHeader = (xmlAsString, pos) => {
     xmlAsString = xmlAsString.substr(pos)
     if (xmlAsString.startsWith('<?xml')) {
