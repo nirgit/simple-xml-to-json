@@ -32,7 +32,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "kind-of": ">=6.0.3",
     "chalk": "^3.0.0",
     "jest": "^24.9.0"
   },
