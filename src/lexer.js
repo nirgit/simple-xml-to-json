@@ -4,31 +4,35 @@ const {Token, TOKEN_TYPE} = require('./model')
 const EOF_TOKEN = Token('EOF')
 
 const isCharBlank = char => char === " " || char === "\n" || char === "\r" || char === "\t"
-const removeXMLDocumentHeader = (xmlAsString, pos) => {
-    xmlAsString = xmlAsString.substr(pos)
-    if (xmlAsString.startsWith('<?xml')) {
-        xmlAsString = xmlAsString.replace(/<\?xml.*\?>/, '')
+
+const skipXMLDocumentHeader = (xmlAsString, pos) => {
+    if (xmlAsString.startsWith('<?xml', pos)) {
+        const len = xmlAsString.length
+        while (pos < len) {
+            if (xmlAsString[pos] !== '?') {
+                pos++
+            } else if (xmlAsString[pos + 1] === '>') {
+                return pos + 2 // skip "?>""
+            } else {
+                pos++
+            }
+        }
     }
-    return xmlAsString;
+    return pos;
 }
 
-const replaceQuotes = xmlAsString => xmlAsString.replace(/'/g, '"')
+const replaceQuotes = str => str.replace(/'/g, '"')
 
-const normalizeXMLForLexer = xmlAsString => {
+const getInitialPosForLexer = xmlAsString => {
     let pos = 0
     while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
-    xmlAsString = removeXMLDocumentHeader(xmlAsString, pos)
-    xmlAsString = replaceQuotes(xmlAsString)
-
-    return xmlAsString
+    return skipXMLDocumentHeader(xmlAsString, pos)
 }
 
 function createLexer(xmlAsString) {
 
-    xmlAsString = normalizeXMLForLexer(xmlAsString)
-
     let currentToken = null
-    let pos = 0
+    let pos = getInitialPosForLexer(xmlAsString)
 
     const peek = () => xmlAsString[pos]
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
@@ -38,8 +42,11 @@ function createLexer(xmlAsString) {
     }
 
     const skipQuotes = () => {
-        if (hasNext() && xmlAsString[pos] === '"') pos++
+        if (hasNext() && isQuote(peek())) pos++
     }
+
+    const isQuote = char => '"' === char || "'" === char
+
     const skipSpaces = () => {
         while (hasNext() && isBlankSpace()) pos++
     }
@@ -77,8 +84,7 @@ function createLexer(xmlAsString) {
         const matcher = areSpecialCharsSupported ? NAMES_VALS_CONTENT_MATCHER : ELEMENT_TYPE_MATCHER
         let start = pos
         while (hasNext() && xmlAsString[pos].match(matcher)) pos++
-        const buffer = xmlAsString.substring(start, pos)
-        return buffer
+        return replaceQuotes(xmlAsString.substring(start, pos))
     }
 
     const isElementBegin = () => currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET
@@ -95,8 +101,8 @@ function createLexer(xmlAsString) {
         } else if (isAssignToAttribute()) { // assign value to attribute
             skipQuotes()
             let start = pos
-            while (hasNext() && xmlAsString[pos] !== '"') pos++
-            const buffer = xmlAsString.substring(start, pos)
+            while (hasNext() && !isQuote(peek())) pos++
+            const buffer = replaceQuotes(xmlAsString.substring(start, pos))
             pos++
             currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
         } else {
