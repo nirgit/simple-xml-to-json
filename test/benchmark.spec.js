@@ -8,7 +8,7 @@ describe('transpiler', () => {
     it('Benchmarking the library', () => {
         const xmlInput = readXMLFile(__dirname + '/benchmark-input.xml')
         const start = performance.now()
-        const iterations = 20 * 1000
+        const iterations = 1000
         for (let i = 0; i < iterations; i++) {
             convertXML(xmlInput)
         }
