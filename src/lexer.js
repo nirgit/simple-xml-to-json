@@ -80,7 +80,7 @@ function createLexer(xmlAsString) {
 
     const readAlphaNumericChars = (areSpecialCharsSupported) => {
         const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:\-]/
-        const NAMES_VALS_CONTENT_MATCHER = /[0-9_\s\.:\/\-\+\$~\|\^,\p{M}\p{P}\p{L}]/u
+        const NAMES_VALS_CONTENT_MATCHER = /[^>=<]/u
         const matcher = areSpecialCharsSupported ? NAMES_VALS_CONTENT_MATCHER : ELEMENT_TYPE_MATCHER
         let start = pos
         while (hasNext() && xmlAsString[pos].match(matcher)) pos++
