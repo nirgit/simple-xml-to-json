@@ -2,9 +2,26 @@
 
 const testUtils = require('./testUtils');
 const {transpile, AttribNode, ElementNode} = require('../src/transpiler')
+const {convertXML} = require('../src/xmlToJson')
 const astToJson = require('../src/converters/astToJson')
 
 const XML_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'
+
+describe('issues', () => {
+    it('issue #17 - support special char ¬', () => {
+        const json = convertXML('<a><child>hi ¬</child></a>');
+        expect(json).toEqual({
+            "a": {
+                children: [{
+                    child: {
+                        content: "hi ¬"
+                    }
+                }
+            ]
+            }
+        })
+    })
+})
 
 describe('transpiler', () => {
     describe('to AST', () => {
