@@ -1,8 +1,8 @@
 'use strict'
 
-const {readXMLFile} = require('./testUtils');
-const {convertXML} = require('../src/xmlToJson');
-const { convert } = require('../src/converters/astToJson');
+const { readXMLFile } = require('./testUtils')
+const { convertXML } = require('../src/xmlToJson')
+const { convert } = require('../src/converters/astToJson')
 
 describe('transpiler', () => {
     it('Benchmarking the library', () => {
@@ -13,7 +13,11 @@ describe('transpiler', () => {
             convertXML(xmlInput)
         }
         const end = performance.now()
-        console.log(`avg exec time of ${iterations} iterations (in ms): ${(end - start) / iterations}`)
-        expect((end - start)).toBeGreaterThan(0)
+        console.log(
+            `avg exec time of ${iterations} iterations (in ms): ${
+                (end - start) / iterations
+            }`
+        )
+        expect(end - start).toBeGreaterThan(0)
     })
 })

@@ -20,19 +20,21 @@
   }],
   "main": "src/xmlToJson.js",
   "scripts": {
+    "prettify": "prettier --write ./**/*.js",
     "example": "node example/example.js",
     "test": "npx jest"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/nirgit/simple-xml-to-json.git"
-  },  
+  },
   "bugs": {
     "url": "https://github.com/nirgit/simple-xml-to-json/issues"
   },
   "dependencies": {},
   "devDependencies": {
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "prettier": "2.6.1"
   },
   "engines": {
     "node": ">=10.18.0"

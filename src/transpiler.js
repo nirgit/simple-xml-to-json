@@ -1,16 +1,21 @@
-'use strict';
+'use strict'
 
-const {createLexer} = require('./lexer')
-const {Token, TOKEN_TYPE} = require('./model')
+const { createLexer } = require('./lexer')
+const { Token, TOKEN_TYPE } = require('./model')
 // AST Node types
-const [ROOT, ELEMENT, ATTRIBUTE, CONTENT] = ["ROOT", "ELEMENT", "ATTRIBUTE", "CONTENT"]
+const [ROOT, ELEMENT, ATTRIBUTE, CONTENT] = [
+    'ROOT',
+    'ELEMENT',
+    'ATTRIBUTE',
+    'CONTENT'
+]
 
 const Node = (type, value) => ({
     type,
     value
 })
 
-const ContentNode = value => Node(CONTENT, value)
+const ContentNode = (value) => Node(CONTENT, value)
 
 const ElementNode = (type, attributes, children) => {
     return Node(ELEMENT, {
@@ -27,8 +32,7 @@ const AttribNode = (name, value) => {
     })
 }
 
-
-const parseXML = lexer => {
+const parseXML = (lexer) => {
     /*
     How does the grammar look?
     | expr: (openBracket + ElementName) + (AttributeList)* + closeBracket + (expr)* + closeElement
@@ -55,14 +59,24 @@ const parseExpr = (lexer, scopingElement) => {
                 const elementLexem = lexer.next()
                 const elementAttributes = parseElementAttributes(lexer)
                 let elementChildren = parseExpr(lexer, elementLexem)
-                if (elementChildren && elementChildren.length > 0 && elementChildren[0].type === TOKEN_TYPE.CONTENT) {
-                    elementChildren = [ContentNode(elementChildren.map(elc => elc.value).join(''))]
+                if (
+                    elementChildren &&
+                    elementChildren.length > 0 &&
+                    elementChildren[0].type === TOKEN_TYPE.CONTENT
+                ) {
+                    elementChildren = [
+                        ContentNode(
+                            elementChildren.map((elc) => elc.value).join('')
+                        )
+                    ]
                 }
-                children.push(ElementNode(
-                    elementLexem.value,
-                    elementAttributes,
-                    elementChildren
-                    ))
+                children.push(
+                    ElementNode(
+                        elementLexem.value,
+                        elementAttributes,
+                        elementChildren
+                    )
+                )
                 break
             }
             case TOKEN_TYPE.CLOSE_ELEMENT: {
@@ -77,21 +91,28 @@ const parseExpr = (lexer, scopingElement) => {
                 return children
             }
             default: {
-                throw new Error("Unknown Lexem type: " + lexem.type)
+                throw new Error('Unknown Lexem type: ' + lexem.type)
             }
         }
     }
     return children
 }
-    
-const parseElementAttributes = lexer => {
+
+const parseElementAttributes = (lexer) => {
     const attribs = []
     let currentToken = lexer.peek()
-    if (!lexer.hasNext() || (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET)) {
+    if (
+        !lexer.hasNext() ||
+        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET)
+    ) {
         return attribs
     }
     currentToken = lexer.next()
-    while (lexer.hasNext() && (currentToken && currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET)) {
+    while (
+        lexer.hasNext() &&
+        currentToken &&
+        currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET
+    ) {
         const attribName = currentToken
         lexer.next() //assignment token
         const attribValue = lexer.next()

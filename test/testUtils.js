@@ -2,8 +2,8 @@
 
 const fs = require('fs')
 
-const readXMLFile = fileName => {
-    return fs.readFileSync(fileName, {encoding: 'utf8'})
+const readXMLFile = (fileName) => {
+    return fs.readFileSync(fileName, { encoding: 'utf8' })
 }
 
 module.exports = {
