@@ -36,10 +36,7 @@ function createLexer(xmlAsString) {
 
     const peek = () => xmlAsString[pos]
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
-    const isBlankSpace = () => {
-        const char = xmlAsString[pos]
-        return isCharBlank(char)
-    }
+    const isBlankSpace = () => isCharBlank(xmlAsString[pos])
 
     const skipQuotes = () => {
         if (hasNext() && isQuote(peek())) pos++
@@ -91,7 +88,9 @@ function createLexer(xmlAsString) {
     const isAssignToAttribute = () => currentToken && currentToken.type === TOKEN_TYPE.ASSIGN
 
     const next = () => {
+        const prevPos = pos
         skipSpaces();
+        const numOfSpacesSkipped = pos - prevPos
         if (!hasNext()) {
             currentToken = EOF_TOKEN
         } else if (isElementBegin()) { // starting new element
@@ -107,7 +106,7 @@ function createLexer(xmlAsString) {
             currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
         } else {
             skipSpaces()
-            const buffer = readAlphaNumericCharsOrBrackets(true)
+            let buffer = readAlphaNumericCharsOrBrackets(true)
             switch (buffer) {
                 case "=": {
                     if (currentToken.type === TOKEN_TYPE.ATTRIB_NAME) {
@@ -157,7 +156,8 @@ function createLexer(xmlAsString) {
                             // it should be an attribute name token
                             currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
                         } else {
-                            currentToken = Token(TOKEN_TYPE.CONTENT, buffer)
+                            const contentBuffer = ' '.repeat(numOfSpacesSkipped) + buffer // spaces included as content
+                            currentToken = Token(TOKEN_TYPE.CONTENT, contentBuffer)
                         }
                         break;
                     } else {

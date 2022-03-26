@@ -356,5 +356,43 @@ describe('transpiler', () => {
                 })
             })
         })
+
+        it('Spaces as content', () => {
+            const json = convertXML('<a><child>hello     world</child><child>1    + 1  =  2</child></a>');
+            expect(json).toEqual({
+                "a": {
+                    children: [{
+                        child: {
+                            content: "hello     world"
+                        }
+                    },
+                    {
+                    child: {
+                        content: "1    + 1  =  2"
+                    }
+                }
+                ]
+                }
+            })
+        })
+
+        it('Spaces and Tabs as content', () => {
+            const json = convertXML('<a><child>2 tabs        between</child><child>1tab  + 1space</child></a>');
+            expect(json).toEqual({
+                "a": {
+                    children: [
+                        {
+                            child: {
+                                content: "2 tabs        between"
+                            }
+                        },
+                        {
+                        child: {
+                            content: "1tab  + 1space"
+                        }
+                    }]
+                }
+            })
+        })
     })
 })
