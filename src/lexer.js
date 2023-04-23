@@ -174,8 +174,17 @@ function createLexer(xmlAsString) {
                             currentToken.type !== TOKEN_TYPE.ATTRIB_NAME &&
                             currentToken.type !== TOKEN_TYPE.CONTENT
                         ) {
-                            // it should be an attribute name token
-                            currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
+                            if (currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT) {
+                                // we're assuming this is content, part of unstructured data
+                                buffer = ' '.repeat(numOfSpacesSkipped) + buffer
+                                currentToken = Token(
+                                    TOKEN_TYPE.CONTENT,
+                                    buffer
+                                )
+                            } else {
+                                // it should be an attribute name token
+                                currentToken = Token(TOKEN_TYPE.ATTRIB_NAME, buffer)
+                            }
                         } else {
                             const contentBuffer =
                                 ' '.repeat(numOfSpacesSkipped) + buffer // spaces included as content

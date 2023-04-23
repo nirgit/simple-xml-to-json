@@ -35,7 +35,10 @@ const AttribNode = (name, value) => {
 const parseXML = (lexer) => {
     /*
     How does the grammar look?
-    | expr: (openBracket + ElementName) + (AttributeList)* + closeBracket + (expr)* + closeElement
+    | expr: StructuredXML | UnstructuredXML | Content
+    | StructuredXML: (openBracket + ElementName) + (AttributeList)* + closeBracket + (expr)* + closeElement
+    | UnstructuredXML: Content* + expr* + Content*
+    | Content: String
     | openBracket: <
     | closeBracket: >
     | closeElement: </ + ElementName + closeBracket
@@ -64,11 +67,7 @@ const parseExpr = (lexer, scopingElement) => {
                     elementChildren.length > 0 &&
                     elementChildren[0].type === TOKEN_TYPE.CONTENT
                 ) {
-                    elementChildren = [
-                        ContentNode(
-                            elementChildren.map((elc) => elc.value).join('')
-                        )
-                    ]
+                    elementChildren = reduceChildrenElements(elementChildren)
                 }
                 children.push(
                     ElementNode(
@@ -91,7 +90,7 @@ const parseExpr = (lexer, scopingElement) => {
                 return children
             }
             default: {
-                throw new Error('Unknown Lexem type: ' + lexem.type)
+                throw new Error(`Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${scopingElement.value}"`)
             }
         }
     }
@@ -122,6 +121,26 @@ const parseElementAttributes = (lexer) => {
     }
     return attribs
 }
+
+function reduceChildrenElements(elementChildren) {
+    let reduced = [], buffer = '';
+  
+    elementChildren.forEach(child => {
+      if (child.type === TOKEN_TYPE.CONTENT) {
+        buffer += child.value;
+      } else {
+        if (buffer.length) {
+          reduced.push(ContentNode(buffer));
+          buffer = '';
+        }
+        reduced.push(child);
+      }
+    });
+  
+    if (buffer.length) reduced.push(ContentNode(buffer));
+  
+    return reduced;
+}   
 
 function transpile(xmlAsString, astConverter) {
     const lexer = createLexer(xmlAsString)

@@ -13,11 +13,13 @@
   "license": "MIT",
   "version": "1.0.9",
   "author": "Nir Moav <getnirm@gmail.com>",
-  "contributors": [{
-    "name": "Nir Moav",
-    "email": "getnirm@gmail.com",
-    "url": "https://nirgit.github.io/"
-  }],
+  "contributors": [
+    {
+      "name": "Nir Moav",
+      "email": "getnirm@gmail.com",
+      "url": "https://nirgit.github.io/"
+    }
+  ],
   "main": "src/xmlToJson.js",
   "scripts": {
     "prettify": "prettier --write ./**/*.js",

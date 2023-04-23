@@ -27,6 +27,9 @@ const buildJSONFromNode = node => {
             json[attribNameAndValue.name] = attribNameAndValue.value
             break
         }
+        case 'CONTENT': {
+            return {content: node.value}
+        }
         default: {
             break;
         }
