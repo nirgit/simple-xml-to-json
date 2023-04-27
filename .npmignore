@@ -1,0 +1,9 @@
+test/
+example/
+.vscode/
+.github/
+.idea/
+.travis.yml
+.watchmanconfig
+.prettierrc.json
+.prettierignore
