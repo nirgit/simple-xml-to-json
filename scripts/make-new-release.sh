@@ -15,4 +15,4 @@ npm i
 npx rollup -c
 
 npm publish --dry-run
-echo ">>>>>>>>> Version $NEXT_VERSION is ready to be published!
+echo ">>>>>>>>> Version $NEXT_VERSION is ready to be published!"
