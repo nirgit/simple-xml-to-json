@@ -1,5 +1,7 @@
+src/
 test/
 example/
+scripts/
 .vscode/
 .github/
 .idea/
@@ -7,3 +9,4 @@ example/
 .watchmanconfig
 .prettierrc.json
 .prettierignore
+rollup.config.js
