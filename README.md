@@ -1,6 +1,6 @@
 # A simple XML to JSON converter
 * Note - _this is a *beta*. Use at your own discretion_.
-[![Build Status](https://travis-ci.org/nirgit/xml-to-json.svg?branch=master)](https://travis-ci.org/nirgit/xml-to-json)
+[![Test CI](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml/badge.svg)](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml)
 [![npm version](https://img.shields.io/npm/v/simple-xml-to-json.svg?style=flat-square)](https://www.npmjs.com/package/simple-xml-to-json)
 
 ## Install
