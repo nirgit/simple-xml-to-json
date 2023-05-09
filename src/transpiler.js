@@ -90,7 +90,9 @@ const parseExpr = (lexer, scopingElement) => {
                 return children
             }
             default: {
-                throw new Error(`Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${scopingElement.value}"`)
+                throw new Error(
+                    `Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${scopingElement.value}"`
+                )
             }
         }
     }
@@ -123,24 +125,25 @@ const parseElementAttributes = (lexer) => {
 }
 
 function reduceChildrenElements(elementChildren) {
-    let reduced = [], buffer = '';
-  
-    elementChildren.forEach(child => {
-      if (child.type === TOKEN_TYPE.CONTENT) {
-        buffer += child.value;
-      } else {
-        if (buffer.length) {
-          reduced.push(ContentNode(buffer));
-          buffer = '';
+    let reduced = [],
+        buffer = ''
+
+    elementChildren.forEach((child) => {
+        if (child.type === TOKEN_TYPE.CONTENT) {
+            buffer += child.value
+        } else {
+            if (buffer.length) {
+                reduced.push(ContentNode(buffer))
+                buffer = ''
+            }
+            reduced.push(child)
         }
-        reduced.push(child);
-      }
-    });
-  
-    if (buffer.length) reduced.push(ContentNode(buffer));
-  
-    return reduced;
-}   
+    })
+
+    if (buffer.length) reduced.push(ContentNode(buffer))
+
+    return reduced
+}
 
 function transpile(xmlAsString, astConverter) {
     const lexer = createLexer(xmlAsString)

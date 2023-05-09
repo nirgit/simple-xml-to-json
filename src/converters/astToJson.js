@@ -31,7 +31,7 @@ const buildJSONFromNode = node => {
             return {content: node.value}
         }
         default: {
-            break;
+            break
         }
     }
 

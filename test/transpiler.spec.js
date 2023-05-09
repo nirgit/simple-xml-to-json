@@ -26,7 +26,9 @@ describe('issues', () => {
     describe('issue #22 - supporting unstructured XML', () => {
         xdescribe('Unsupported cases', () => {
             it('should support BLANK SPACES in unstructured XML -> TEXT + XML + BLANK SPACES + XML + TEXT', () => {
-                const json = convertXML('<a>Hello <b>again</b>    <c>unstructured</c> XML</a>')
+                const json = convertXML(
+                    '<a>Hello <b>again</b>    <c>unstructured</c> XML</a>'
+                )
                 expect(json).toEqual({
                     a: {
                         children: [
@@ -75,7 +77,9 @@ describe('issues', () => {
             })
 
             it('should support unstructured XML -> TEXT + XML', () => {
-                const json = convertXML('<a>Hello again <b>unstructured XML</b></a>')
+                const json = convertXML(
+                    '<a>Hello again <b>unstructured XML</b></a>'
+                )
                 expect(json).toEqual({
                     a: {
                         children: [
@@ -93,7 +97,9 @@ describe('issues', () => {
             })
 
             it('should support unstructured XML -> XML + XML + TEXT + XML', () => {
-                const json = convertXML('<a><Hello>inner content</Hello><b>again</b> unstructured <c>XML</c></a>')
+                const json = convertXML(
+                    '<a><Hello>inner content</Hello><b>again</b> unstructured <c>XML</c></a>'
+                )
                 expect(json).toEqual({
                     a: {
                         children: [
@@ -121,7 +127,9 @@ describe('issues', () => {
             })
 
             it('should support unstructured XML -> TEXT + XML + TEXT + XML', () => {
-                const json = convertXML('<a>Hello <b>again</b> unstructured <c>XML</c></a>')
+                const json = convertXML(
+                    '<a>Hello <b>again</b> unstructured <c>XML</c></a>'
+                )
                 expect(json).toEqual({
                     a: {
                         children: [
@@ -145,62 +153,66 @@ describe('issues', () => {
                     }
                 })
             })
-            
+
             it('should support unstructured XML -> TEXT + XML + TEXT', () => {
-                const json = convertXML('<p style="color: white;">This is a sentence <b>with</b> one word in bold</p>')
+                const json = convertXML(
+                    '<p style="color: white;">This is a sentence <b>with</b> one word in bold</p>'
+                )
                 expect(json).toEqual({
-                p: {
-                    style: 'color: white;',
-                    children: [
-                        {
-                            content: 'This is a sentence '
-                        },
-                        {
-                            b: {
-                                content: 'with'
+                    p: {
+                        style: 'color: white;',
+                        children: [
+                            {
+                                content: 'This is a sentence '
+                            },
+                            {
+                                b: {
+                                    content: 'with'
+                                }
+                            },
+                            {
+                                content: ' one word in bold'
                             }
-                        },
-                        {
-                            content: ' one word in bold'
-                        }
-                    ]
-                }
+                        ]
+                    }
                 })
             })
 
             it('should support unstructured nested XML -> TEXT + XML + UNSTRUCTURED_XML + TEXT', () => {
-                const json = convertXML('<p style="color: white;">This is a sentence <b>with</b><c>nested <unstructured>XML</unstructured></c> one word in bold</p>')
+                const json = convertXML(
+                    '<p style="color: white;">This is a sentence <b>with</b><c>nested <unstructured>XML</unstructured></c> one word in bold</p>'
+                )
                 expect(json).toEqual({
-                p: {
-                    style: 'color: white;',
-                    children: [
-                        {
-                            content: 'This is a sentence '
-                        },
-                        {
-                            b: {
-                                content: 'with'
-                            }
-                        },
-                        {
-                            c: {
-                                children: [
-                                    {
-                                        content: 'nested '
-                                    },
-                                    {
-                                        unstructured: {
-                                            content: 'XML'
+                    p: {
+                        style: 'color: white;',
+                        children: [
+                            {
+                                content: 'This is a sentence '
+                            },
+                            {
+                                b: {
+                                    content: 'with'
+                                }
+                            },
+                            {
+                                c: {
+                                    children: [
+                                        {
+                                            content: 'nested '
+                                        },
+                                        {
+                                            unstructured: {
+                                                content: 'XML'
+                                            }
                                         }
-                                    }
-                                ]
+                                    ]
+                                }
+                            },
+                            {
+                                content: ' one word in bold'
                             }
-                        },
-                        {
-                            content: ' one word in bold'
-                        }
-                    ]
-                }
+                        ]
+                    }
                 })
             })
         })
