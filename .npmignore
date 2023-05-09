@@ -9,4 +9,5 @@ scripts/
 .watchmanconfig
 .prettierrc.json
 .prettierignore
+.eslintrc.json
 rollup.config.js
