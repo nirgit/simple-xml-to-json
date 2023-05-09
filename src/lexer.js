@@ -79,7 +79,7 @@ function createLexer(xmlAsString) {
     }
 
     const readAlphaNumericChars = (areSpecialCharsSupported) => {
-        const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:\-]/
+        const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:-]/
         const NAMES_VALS_CONTENT_MATCHER = /[^>=<]/u
         const matcher = areSpecialCharsSupported
             ? NAMES_VALS_CONTENT_MATCHER
