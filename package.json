@@ -20,12 +20,17 @@
       "url": "https://nirgit.github.io/"
     }
   ],
-  "main": "lib/xmlToJson.min.js",
+  "main": "lib/simpleXmlToJson.min.js",
+  "typings": "typings/simple-xml-to-json.d.ts",
+  "files": [
+    "lib",
+    "typings"
+  ],
   "scripts": {
     "lint": "eslint ./src ./test",
     "prettify": "prettier --write ./**/*.js",
     "example": "node example/example.js",
-    "test": "npx jest",
+    "test": "jest",
     "make-new-release-lib": "sh ./scripts/make-new-release.sh",
     "validate-lib-health": "npm run prettify && npm run lint && npm test"
   },
