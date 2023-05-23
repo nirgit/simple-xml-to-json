@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 export default {
   input: 'src/xmlToJson.js',
   output: {
-    file: 'lib/xmlToJson.min.js',
+    file: 'lib/simpleXmlToJson.min.js',
     format: 'cjs',
     exports: 'auto'
   },
