@@ -1,7 +1,8 @@
 # A simple XML to JSON converter
 
-[![Test CI](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml/badge.svg)](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml)
 [![npm version](https://img.shields.io/npm/v/simple-xml-to-json.svg?style=flat-square)](https://www.npmjs.com/package/simple-xml-to-json)
+[![Test CI](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml/badge.svg)](https://github.com/nirgit/simple-xml-to-json/actions/workflows/node.js.yml)
+[![codecov](https://codecov.io/gh/nirgit/simple-xml-to-json/branch/master/graph/badge.svg?token=XW7CWWM4RV)](https://codecov.io/gh/nirgit/simple-xml-to-json)
 
 ## Install
 Simply install using NPM in your project directory
