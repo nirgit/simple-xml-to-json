@@ -1,8 +1,8 @@
 'use strict'
 
 const testUtils = require('./testUtils')
-const { transpile, AttribNode, ElementNode } = require('../src/transpiler')
-const { convertXML } = require('../src/xmlToJson')
+const { AttribNode, ElementNode } = require('../src/transpiler')
+const { convertXML, createAST } = require('../src/xmlToJson')
 const astToJson = require('../src/converters/astToJson')
 
 const XML_HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>'
@@ -223,7 +223,7 @@ describe('transpiler', () => {
     describe('to AST', () => {
         it('should convert a very simple XML to a simple AST', () => {
             const mockXML = '<a></a>'
-            const ast = transpile(mockXML)
+            const ast = createAST(mockXML)
             expect(ast).toEqual({
                 type: 'ROOT',
                 value: {
@@ -243,7 +243,7 @@ describe('transpiler', () => {
 
         it('should convert a simple XML with content to a simple AST', () => {
             const mockXML = '<a>Hello content</a>'
-            const ast = transpile(mockXML)
+            const ast = createAST(mockXML)
             expect(ast).toEqual({
                 type: 'ROOT',
                 value: {
@@ -271,7 +271,7 @@ describe('transpiler', () => {
             ${XML_HEADER}
             <a></a>
             `
-            const ast = transpile(mockXML)
+            const ast = createAST(mockXML)
             expect(ast).toEqual({
                 type: 'ROOT',
                 value: {
@@ -291,7 +291,7 @@ describe('transpiler', () => {
 
         it('should convert a simple xml element with attributes to AST', () => {
             const mockXML = '<a p1="v1" p2="v2"></a>'
-            const ast = transpile(mockXML)
+            const ast = createAST(mockXML)
             expect(ast).toEqual({
                 type: 'ROOT',
                 value: {
@@ -322,7 +322,7 @@ describe('transpiler', () => {
             </b>
             </a>
             `
-            const ast = transpile(mockXML)
+            const ast = createAST(mockXML)
             expect(ast).toEqual({
                 type: 'ROOT',
                 value: {
@@ -382,7 +382,7 @@ describe('transpiler', () => {
                 const expectedJSON = {
                     a: {}
                 }
-                const actualJSON = transpile(mockXML, astToJson)
+                const actualJSON = convertXML(mockXML, astToJson)
                 expect(actualJSON).toEqual(expectedJSON)
             })
 
@@ -394,7 +394,7 @@ describe('transpiler', () => {
                 const expectedJSON = {
                     a: {}
                 }
-                const actualJSON = transpile(mockXML, astToJson)
+                const actualJSON = convertXML(mockXML, astToJson)
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
@@ -411,7 +411,7 @@ describe('transpiler', () => {
                         b: 'hello'
                     }
                 }
-                const actualJSON = transpile(mockXML, astToJson)
+                const actualJSON = convertXML(mockXML, astToJson)
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
@@ -464,7 +464,7 @@ describe('transpiler', () => {
                         ]
                     }
                 }
-                const actualJSON = transpile(mockXML, astToJson)
+                const actualJSON = convertXML(mockXML, astToJson)
                 expect(actualJSON).toEqual(expectedJSON)
             })
         })
@@ -481,7 +481,7 @@ describe('transpiler', () => {
                             content: 'content'
                         }
                     }
-                    const actualJSON = transpile(mockXML, astToJson)
+                    const actualJSON = convertXML(mockXML, astToJson)
                     expect(actualJSON).toEqual(expectedJSON)
                 })
             })
@@ -495,7 +495,7 @@ describe('transpiler', () => {
                             content: 'https://www.acme.com/abc/A-B_C,d+E/'
                         }
                     }
-                    const actualJSON = transpile(mockXML, astToJson)
+                    const actualJSON = convertXML(mockXML, astToJson)
                     expect(actualJSON).toEqual(expectedJSON)
                 })
 
@@ -506,7 +506,7 @@ describe('transpiler', () => {
                             content: 'á'
                         }
                     }
-                    const actualJSON = transpile(mockXML, astToJson)
+                    const actualJSON = convertXML(mockXML, astToJson)
                     expect(actualJSON).toEqual(expectedJSON)
                 })
 
@@ -576,7 +576,7 @@ describe('transpiler', () => {
                             ]
                         }
                     }
-                    const actualJSON = transpile(mockXML, astToJson)
+                    const actualJSON = convertXML(mockXML, astToJson)
                     expect(actualJSON).toEqual(expectedJSON)
                 })
             })
@@ -586,7 +586,7 @@ describe('transpiler', () => {
                     const mockXML = testUtils.readXMLFile(
                         __dirname + '/mock-with-tabs.xml'
                     )
-                    const actualJSON = transpile(mockXML, astToJson)
+                    const actualJSON = convertXML(mockXML, astToJson)
                     const expectedJSON = {
                         'testng-results': {
                             ignored: '20',
