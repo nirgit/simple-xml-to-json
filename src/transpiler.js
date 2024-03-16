@@ -60,8 +60,11 @@ const parseExpr = (lexer, scopingElement) => {
         switch (lexem.type) {
             case TOKEN_TYPE.OPEN_BRACKET: {
                 const elementLexem = lexer.next()
-                const elementAttributes = parseElementAttributes(lexer)
-                let elementChildren = parseExpr(lexer, elementLexem)
+                const [elementAttributes, currentToken] = parseElementAttributes(lexer)
+                let elementChildren = []
+                if (currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT) {
+                    elementChildren = parseExpr(lexer, elementLexem)
+                }
                 if (
                     elementChildren &&
                     elementChildren.length > 0 &&
@@ -104,15 +107,17 @@ const parseElementAttributes = (lexer) => {
     let currentToken = lexer.peek()
     if (
         !lexer.hasNext() ||
-        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET)
+        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) || 
+        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT)
     ) {
-        return attribs
+        return [attribs, currentToken]
     }
     currentToken = lexer.next()
     while (
         lexer.hasNext() &&
         currentToken &&
-        currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET
+        currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET && 
+        currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT 
     ) {
         const attribName = currentToken
         lexer.next() //assignment token
@@ -121,7 +126,7 @@ const parseElementAttributes = (lexer) => {
         attribs.push(attributeNode)
         currentToken = lexer.next()
     }
-    return attribs
+    return [attribs, currentToken]
 }
 
 function reduceChildrenElements(elementChildren) {

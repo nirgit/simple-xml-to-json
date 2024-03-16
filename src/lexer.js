@@ -33,6 +33,7 @@ const getInitialPosForLexer = (xmlAsString) => {
 function createLexer(xmlAsString) {
     let currentToken = null
     let pos = getInitialPosForLexer(xmlAsString)
+    let scopingElement = []
 
     const peek = () => xmlAsString[pos]
     const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
@@ -67,6 +68,14 @@ function createLexer(xmlAsString) {
                     pos++
                     pos++
                     buffer = '<!--'
+                }
+                return buffer
+            } else if (peek() === '/') {
+                let buffer = '/'
+                pos++
+                if (hasNext() && peek() === '>') {
+                    pos++
+                    buffer = '/>'
                 }
                 return buffer
             } else if (xmlAsString[pos] === '=' || xmlAsString[pos] === '>') {
@@ -105,6 +114,7 @@ function createLexer(xmlAsString) {
             skipSpaces()
             const buffer = readAlphaNumericCharsOrBrackets(false)
             currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
+            scopingElement.push(buffer)
         } else if (isAssignToAttribute()) {
             // assign value to attribute
             skipQuotes()
@@ -133,6 +143,12 @@ function createLexer(xmlAsString) {
                         xmlAsString.substring(start, pos)
                     )
                     pos++ // skip the ">"
+                    scopingElement.pop()
+                    break
+                }
+                case '/>': {
+                    const scopingElementName = scopingElement.pop()
+                    currentToken = Token(TOKEN_TYPE.CLOSE_ELEMENT, scopingElementName)
                     break
                 }
                 case '<!--': {
