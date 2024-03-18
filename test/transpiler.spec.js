@@ -217,6 +217,72 @@ describe('issues', () => {
             })
         })
     })
+
+    describe('issue #42 - conversion of self closing elements', () => {
+        it('should support conversion of self closing elements', () => {
+            const json = convertXML(
+                '<parent><child attrib1="val1" attrib2="val2" /></parent>'
+            )
+
+            expect(json).toEqual({
+                parent: {
+                    children: [
+                        {
+                            child: {
+                                attrib1: 'val1',
+                                attrib2: 'val2'
+                            }
+                        }
+                    ]
+                }
+            })
+        })
+
+        it('should support when nested', () => {
+            const json = convertXML(`
+            <?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <item>
+    <atom:link attrib="val" href="http://www.npmjs.com" />
+  </item>
+  <item>
+    <atom:link attrib="val2" href="http://fr.wikipedia.org" />
+  </item>
+</root>
+            `)
+
+            expect(json).toEqual({
+                root: {
+                    children: [
+                        {
+                            item: {
+                                children: [
+                                    {
+                                        'atom:link': {
+                                            attrib: 'val',
+                                            href: 'http://www.npmjs.com'
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            item: {
+                                children: [
+                                    {
+                                        'atom:link': {
+                                            attrib: 'val2',
+                                            href: 'http://fr.wikipedia.org'
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            })
+        })
+    })
 })
 
 describe('transpiler', () => {
