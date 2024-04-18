@@ -42,7 +42,7 @@
     "prettify": "prettier --write ./**/*.js",
     "example": "node example/example.js",
     "test": "jest ",
-    "make-new-release-lib": "sh ./scripts/make-new-release.sh",
+    "make-new-release-lib": "npm run validate-lib-health && sh ./scripts/make-new-release.sh",
     "validate-lib-health": "npm run prettify && npm run lint && npm test"
   },
   "repository": {

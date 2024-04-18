@@ -148,7 +148,10 @@ function createLexer(xmlAsString) {
                 }
                 case '/>': {
                     const scopingElementName = scopingElement.pop()
-                    currentToken = Token(TOKEN_TYPE.CLOSE_ELEMENT, scopingElementName)
+                    currentToken = Token(
+                        TOKEN_TYPE.CLOSE_ELEMENT,
+                        scopingElementName
+                    )
                     break
                 }
                 case '<!--': {
