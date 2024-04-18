@@ -46,16 +46,15 @@ const myAst = createAST(myXMLString)
 ## Benchmark
 
 _Take these results with a grain of salt._\
-According to a __simple__ benchmark test I performed in __April 2020__ with a random XML. _YMMV_.
-![Benchmark Chart](https://github.com/nirgit/assets/blob/master/simple-xml-to-json/simple-xml-to-json-benchmark.png?raw=true)
+According to a __simple__ benchmark test I performed in __April 2024__ with a random XML. _YMMV_.
+![Benchmark Chart](https://github.com/nirgit/assets/blob/master/simple-xml-to-json/simple-xml-to-json-benchmark-2.png?raw=true)
 
-* The chart results __may be__ outdated. [Run the test yourself](https://runkit.com/nirgit/simple-xml-to-json-benchmark)
+* The chart results __may be__ outdated. [Run the test yourself](https://runkit.com/nirgit/6620cf27943a41000847221d)
 
 
 ## Current Drawbacks
-1. No support for XSD
-2. All values are translated to strings in JSON
-3. There are currently reserved words in the JSON converter: 
+1. All values are translated to strings in JSON
+2. There are currently reserved words in the JSON converter: 
     * "content" 
     * "children"
 
