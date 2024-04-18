@@ -3,14 +3,18 @@ import commonjs from '@rollup/plugin-commonjs';
 
 export default {
   input: 'src/xmlToJson.js',
-  output: {
+  output: [
+    {
     file: 'lib/simpleXmlToJson.min.js',
     format: 'cjs',
-    exports: 'auto'
-  },
-  plugins: [
-    commonjs(),
-    terser()
-  ]
+    exports: 'auto',
+    plugins: [terser()]
+    },
+    {
+      file: 'lib/simpleXmlToJson.js',
+      format: 'cjs',
+      exports: 'auto'
+    }
+  ],
+  plugins: [commonjs()]
 };
-

@@ -22,7 +22,7 @@
   ],
   "homepage": "https://github.com/nirgit/simple-xml-to-json",
   "license": "MIT",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "Nir Moav <getnirm@gmail.com>",
   "contributors": [
     {
@@ -38,6 +38,8 @@
     "typings"
   ],
   "scripts": {
+    "build": "npm run clean && rollup -c",
+    "clean": "rm -rf ./lib/ && mkdir lib ",
     "lint": "eslint ./src ./test",
     "prettify": "prettier --write ./**/*.js",
     "example": "node example/example.js",

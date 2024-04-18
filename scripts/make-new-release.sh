@@ -9,10 +9,8 @@ if [ "$(printf '%s\n' "$NEXT_VERSION" "$LATEST_VERSION" | sort -V | head -n1)" =
   exit 1
 fi
 
-rm -rf ./lib/
-mkdir lib 
 npm i
-npx rollup -c
+npm run build
 
 npm publish --dry-run
 echo ">>>>>>>>> Version $NEXT_VERSION is ready to be published!"
