@@ -1,247 +1,371 @@
 'use strict'
 
-const { BUILD, TOKEN_TYPE } = require('./constants')
+const { BIT, BUILD, CHAR_CODE, TOKEN_TYPE } = require('./constants')
 const { Token } = require('./model')
 
-const EOF_TOKEN = Token(TOKEN_TYPE.EOF)
+const EOF_TOKEN = Token(/*inline*/ TOKEN_TYPE.EOF, '')
 
-const isCharBlank = (char) =>
-    char === ' ' || char === '\n' || char === '\r' || char === '\t'
-
-const skipXMLDocumentHeader = (xmlAsString, pos) => {
-    if (xmlAsString.startsWith('<?xml', pos)) {
-        const len = xmlAsString.length
-        while (pos < len) {
-            if (xmlAsString[pos] !== '?') {
-                pos++
-            } else if (xmlAsString[pos + 1] === '>') {
-                return pos + 2 // skip "?>""
-            } else {
-                pos++
-            }
-        }
-    }
-    return pos
-}
-
-const replaceQuotes = (str) => str.replace(/'/g, '"')
-
-const getInitialPosForLexer = (xmlAsString) => {
+function createLexer(xmlAsString, { knownAttrib, knownElement } = {}) {
+    const { length } = xmlAsString
+    const scoping = []
+    let currScope = 0
+    let currToken = EOF_TOKEN
+    let currTokenType = TOKEN_TYPE.EOF
+    let peekedPos = 0
+    let peekedTagName = ''
     let pos = 0
-    while (pos < xmlAsString.length && isCharBlank(xmlAsString[pos])) pos++
-    return skipXMLDocumentHeader(xmlAsString, pos)
-}
 
-function createLexer(xmlAsString) {
-    let currentToken = null
-    let pos = getInitialPosForLexer(xmlAsString)
-    let scopingElement = []
+    const getPos = () => pos
+    const getScope = () => currScope
+    const peek = () => xmlAsString.charCodeAt(pos)
+    const hasNext = () => pos < length
 
-    const peek = () => xmlAsString[pos]
-    const hasNext = () => currentToken !== EOF_TOKEN && pos < xmlAsString.length
-    const isBlankSpace = () => isCharBlank(xmlAsString[pos])
-
-    const skipQuotes = () => {
-        if (hasNext() && isQuote(peek())) pos++
+    const initializePosForLexer = () => {
+        skipSpaces(/*inline*/)
+        skipXMLDocumentHeader(/*inline*/)
     }
 
-    const isQuote = (char) => '"' === char || "'" === char
+    const isAssignToAttribute = () => currTokenType === TOKEN_TYPE.ASSIGN
 
-    const skipSpaces = () => {
-        while (hasNext() && isBlankSpace()) pos++
+    const isBlank = ($code) =>
+        $code === CHAR_CODE.SPACE ||
+        $code === CHAR_CODE.NEW_LINE ||
+        $code === CHAR_CODE.CARRIAGE_RETURN ||
+        $code === CHAR_CODE.TAB
+
+    const isElementBegin = () => currTokenType === TOKEN_TYPE.OPEN_BRACKET
+
+    const isQuote = ($code) =>
+        $code === CHAR_CODE.DOUBLE_QUOTE || $code === CHAR_CODE.SINGLE_QUOTE
+
+    const readAlphaNumericAndSpecialChars = () => {
+        const start = pos
+        while (hasNext(/*inline*/)) {
+            const code = peek(/*inline*/)
+            // inline /[^>=<]/u.test(xmlAsString[pos])
+            if (
+                code !== CHAR_CODE.OPEN_BRACKET &&
+                code !== CHAR_CODE.EQUAL_SIGN &&
+                code !== CHAR_CODE.CLOSE_BRACKET
+            ) {
+                pos += 1
+                continue
+            }
+            break
+        }
+        const str = xmlAsString.slice(start, pos)
+        return replaceQuotes(str)
     }
 
-    const readAlphaNumericCharsOrBrackets = (areSpecialCharsSupported) => {
-        if (hasNext()) {
-            if (xmlAsString[pos] === '<') {
-                let buffer = '<'
-                pos++
-                if (hasNext() && xmlAsString[pos] === '/') {
-                    pos++
-                    buffer = '</'
-                } else if (
-                    hasNext() &&
-                    xmlAsString[pos] === '!' &&
-                    xmlAsString[pos + 1] === '-' &&
-                    xmlAsString[pos + 2] === '-'
+    const readBracketsAsBitmask = () => {
+        if (hasNext(/*inline*/)) {
+            const code = peek(/*inline*/)
+            if (code === CHAR_CODE.OPEN_BRACKET) {
+                pos += 1
+                if (
+                    hasNext(/*inline*/) &&
+                    peek(/*inline*/) === CHAR_CODE.FORWARD_SLASH
+                ) {
+                    pos += 1
+                    return BIT.OPEN_BRACKET_SLASH
+                }
+                if (
+                    hasNext(/*inline*/) &&
+                    peek(/*inline*/) === CHAR_CODE.EXCLAMATION_POINT &&
+                    xmlAsString.charCodeAt(pos + 1) === CHAR_CODE.HYPHEN &&
+                    xmlAsString.charCodeAt(pos + 2) === CHAR_CODE.HYPHEN
                 ) {
                     // its a comment
-                    pos++
-                    pos++
-                    pos++
-                    buffer = '<!--'
+                    pos += 3
+                    return BIT.COMMENT
                 }
-                return buffer
-            } else if (peek() === '/') {
-                let buffer = '/'
-                pos++
-                if (hasNext() && peek() === '>') {
-                    pos++
-                    buffer = '/>'
+                return BIT.OPEN_BRACKET
+            }
+            if (code === CHAR_CODE.FORWARD_SLASH) {
+                pos += 1
+                if (
+                    hasNext(/*inline*/) &&
+                    peek(/*inline*/) === CHAR_CODE.CLOSE_BRACKET
+                ) {
+                    pos += 1
+                    return BIT.SLASH_CLOSE_BRACKET
                 }
-                return buffer
-            } else if (xmlAsString[pos] === '=' || xmlAsString[pos] === '>') {
-                const buffer = xmlAsString[pos]
-                pos++
-                return buffer
+                return BIT.FORWARD_SLASH
+            } else if (code === CHAR_CODE.EQUAL_SIGN) {
+                pos += 1
+                return BIT.EQUAL_SIGN
+            } else if (code === CHAR_CODE.CLOSE_BRACKET) {
+                pos += 1
+                return BIT.CLOSE_BRACKET
             }
         }
-        return readAlphaNumericChars(!!areSpecialCharsSupported)
+        return 0
     }
 
-    const readAlphaNumericChars = (areSpecialCharsSupported) => {
-        const ELEMENT_TYPE_MATCHER = /[a-zA-Z0-9_:-]/
-        const NAMES_VALS_CONTENT_MATCHER = /[^>=<]/u
-        const matcher = areSpecialCharsSupported
-            ? NAMES_VALS_CONTENT_MATCHER
-            : ELEMENT_TYPE_MATCHER
+    const readTagName = () => {
         let start = pos
-        while (hasNext() && xmlAsString[pos].match(matcher)) pos++
-        return replaceQuotes(xmlAsString.substring(start, pos))
+        while (hasNext(/*inline*/)) {
+            const code = peek(/*inline*/)
+            // inline /[a-zA-Z0-9_:-]/.test(xmlAsString[pos])
+            if (
+                (code >= CHAR_CODE.LOWER_A && code <= CHAR_CODE.LOWER_Z) ||
+                (code >= CHAR_CODE.UPPER_A && code <= CHAR_CODE.UPPER_Z) ||
+                (code >= CHAR_CODE.DIGIT_0 && code <= CHAR_CODE.DIGIT_9) ||
+                code === CHAR_CODE.LODASH ||
+                code === CHAR_CODE.COLON ||
+                code === CHAR_CODE.HYPHEN
+            ) {
+                pos += 1
+                continue
+            }
+            break
+        }
+        return xmlAsString.slice(start, pos)
     }
 
-    const isElementBegin = () =>
-        currentToken && currentToken.type === TOKEN_TYPE.OPEN_BRACKET
-    const isAssignToAttribute = () =>
-        currentToken && currentToken.type === TOKEN_TYPE.ASSIGN
+    const replaceQuotes = ($str) => {
+        let output = ''
+        let fromIndex = 0
+        let index = 0
+        while ((index = $str.indexOf("'", fromIndex)) !== -1) {
+            output = output + $str.slice(fromIndex, index) + '"'
+            fromIndex = index + 1
+        }
+        return fromIndex ? output + $str.slice(fromIndex) : $str
+    }
+
+    const skipQuotes = () => {
+        if (hasNext(/*inline*/)) {
+            const code = peek(/*inline*/)
+            if (isQuote(/*inline*/ code)) {
+                pos += 1
+            }
+        }
+    }
+
+    const skipSpaces = () => {
+        while (hasNext(/*inline*/)) {
+            const code = peek(/*inline*/)
+            if (isBlank(/*inline*/ code)) {
+                pos += 1
+                continue
+            }
+            break
+        }
+    }
+
+    const skipXMLDocumentHeader = () => {
+        // inline xmlAsString.startsWith('<?xml', pos)
+        if (
+            peek(/*inline*/) === CHAR_CODE.OPEN_BRACKET &&
+            xmlAsString.charCodeAt(pos + 1) === CHAR_CODE.QUESTION_MARK &&
+            xmlAsString.charCodeAt(pos + 2) === CHAR_CODE.LOWER_X &&
+            xmlAsString.charCodeAt(pos + 3) === CHAR_CODE.LOWER_M &&
+            xmlAsString.charCodeAt(pos + 4) === CHAR_CODE.LOWER_L
+        ) {
+            while (hasNext(/*inline*/)) {
+                if (peek(/*inline*/) !== CHAR_CODE.QUESTION_MARK) {
+                    pos += 1
+                } else if (
+                    xmlAsString.charCodeAt(pos + 1) === CHAR_CODE.CLOSE_BRACKET
+                ) {
+                    // skip "?>"
+                    pos += 2
+                    break
+                } else {
+                    pos += 1
+                }
+            }
+        }
+    }
 
     const next = () => {
-        const prevPos = pos
-        skipSpaces()
-        const numOfSpacesSkipped = pos - prevPos
-        if (!hasNext()) {
-            currentToken = EOF_TOKEN
-        } else if (isElementBegin()) {
-            // starting new element
-            skipSpaces()
-            const buffer = readAlphaNumericCharsOrBrackets(false)
-            currentToken = Token(TOKEN_TYPE.ELEMENT_TYPE, buffer)
-            scopingElement.push(buffer)
-        } else if (isAssignToAttribute()) {
-            // assign value to attribute
-            skipQuotes()
-            let start = pos
-            while (hasNext() && !isQuote(peek())) pos++
-            const buffer = replaceQuotes(xmlAsString.substring(start, pos))
-            pos++
-            currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)
-        } else {
-            skipSpaces()
-            let buffer = readAlphaNumericCharsOrBrackets(true)
-            switch (buffer) {
-                case '=': {
-                    if (currentToken.type === TOKEN_TYPE.ATTRIB_NAME) {
-                        currentToken = Token(TOKEN_TYPE.ASSIGN)
-                    } else {
-                        currentToken = Token(TOKEN_TYPE.CONTENT, buffer)
+        while (true) {
+            const prevPos = pos
+            skipSpaces(/*inline*/)
+            const numOfSpacesSkipped = pos - prevPos
+            if (!(hasNext(/*inline*/))) {
+                currToken = EOF_TOKEN
+                currTokenType = TOKEN_TYPE.EOF
+                return currToken
+            }
+            if (isElementBegin(/*inline*/)) {
+                // starting new element
+                const tagName = readTagName()
+                currScope = { tagName }
+                currTokenType = TOKEN_TYPE.ELEMENT_TYPE
+                currToken = Token(/*inline*/ TOKEN_TYPE.ELEMENT_TYPE, tagName)
+                scoping.push(currScope)
+                return currToken
+            } else if (isAssignToAttribute(/*inline*/)) {
+                // assign value to attribute
+                skipQuotes(/*inline*/)
+                let start = pos
+                while (hasNext(/*inline*/)) {
+                    const code = peek(/*inline*/)
+                    if (isQuote(/*inline*/ code)) {
+                        break
                     }
-                    break
+                    pos += 1
                 }
-                case '</': {
-                    const start = pos
-                    while (xmlAsString[pos] !== '>') pos++
-                    currentToken = Token(
-                        TOKEN_TYPE.CLOSE_ELEMENT,
-                        xmlAsString.substring(start, pos)
-                    )
-                    pos++ // skip the ">"
-                    scopingElement.pop()
-                    break
-                }
-                case '/>': {
-                    const scopingElementName = scopingElement.pop()
-                    currentToken = Token(
-                        TOKEN_TYPE.CLOSE_ELEMENT,
-                        scopingElementName
-                    )
-                    break
-                }
-                case '<!--': {
-                    // skipComment contents
-                    const closingBuff = ['!', '-', '-']
-                    while (
-                        hasNext() &&
-                        (closingBuff[2] !== '>' ||
-                            closingBuff[1] !== '-' ||
-                            closingBuff[0] !== '-')
-                    ) {
-                        closingBuff.shift()
-                        closingBuff.push(xmlAsString[pos])
-                        pos++
+                currTokenType = TOKEN_TYPE.ATTRIB_VALUE
+                const str = xmlAsString.slice(start, pos)
+                const buffer = replaceQuotes(str)
+                pos += 1
+                currToken = Token(/*inline*/ TOKEN_TYPE.ATTRIB_VALUE, buffer)
+                return currToken
+            } else {
+                skipSpaces(/*inline*/)
+                switch (readBracketsAsBitmask()) {
+                    case BIT.OPEN_BRACKET: {
+                        currTokenType = TOKEN_TYPE.OPEN_BRACKET
+                        currToken = Token(
+                            /*inline*/ TOKEN_TYPE.OPEN_BRACKET,
+                            ''
+                        )
+                        return currToken
                     }
-                    return next()
-                }
-                case '>': {
-                    currentToken = Token(TOKEN_TYPE.CLOSE_BRACKET)
-                    break
-                }
-                case '<': {
-                    currentToken = Token(TOKEN_TYPE.OPEN_BRACKET)
-                    break
-                }
-                default: {
-                    // here we fall if we have alphanumeric string, which can be related to attributes, content or nothing
-                    if (buffer && buffer.length > 0) {
-                        if (currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) {
-                            let suffix = ''
-                            if (peek() !== '<') {
-                                suffix = readAlphaNumericChars(true)
-                            }
-                            currentToken = Token(
-                                TOKEN_TYPE.CONTENT,
-                                buffer + suffix
-                            )
-                        } else if (
-                            currentToken.type !== TOKEN_TYPE.ATTRIB_NAME &&
-                            currentToken.type !== TOKEN_TYPE.CONTENT
+                    case BIT.OPEN_BRACKET_SLASH: {
+                        scoping.pop()
+                        const start = pos
+                        while (peek(/*inline*/) !== CHAR_CODE.CLOSE_BRACKET)
+                            pos += 1
+                        currScope = scoping[scoping.length - 1]
+                        currTokenType = TOKEN_TYPE.CLOSE_ELEMENT
+                        currToken = Token(
+                            /*inline*/
+                            TOKEN_TYPE.CLOSE_ELEMENT,
+                            xmlAsString.slice(start, pos)
+                        )
+                        pos += 1 // skip the ">"
+                        return currToken
+                    }
+                    case BIT.CLOSE_BRACKET: {
+                        currTokenType = TOKEN_TYPE.CLOSE_BRACKET
+                        currToken = Token(
+                            /*inline*/ TOKEN_TYPE.CLOSE_BRACKET,
+                            ''
+                        )
+                        return currToken
+                    }
+                    case BIT.SLASH_CLOSE_BRACKET: {
+                        const { tagName } = scoping.pop()
+                        currScope = scoping[scoping.length - 1]
+                        currTokenType = TOKEN_TYPE.CLOSE_ELEMENT
+                        currToken = Token(
+                            /*inline*/
+                            TOKEN_TYPE.CLOSE_ELEMENT,
+                            tagName
+                        )
+                        return currToken
+                    }
+                    case BIT.EQUAL_SIGN: {
+                        if (currTokenType === TOKEN_TYPE.ATTRIB_NAME) {
+                            currTokenType = TOKEN_TYPE.ASSIGN
+                            currToken = Token(/*inline*/ TOKEN_TYPE.ASSIGN, '')
+                            return currToken
+                        }
+                        currTokenType = TOKEN_TYPE.CONTENT
+                        currToken = Token(/*inline*/ TOKEN_TYPE.CONTENT, '=')
+                        return currToken
+                    }
+                    case BIT.COMMENT: {
+                        // skipComment contents
+                        const closingBuff = [
+                            CHAR_CODE.EXCLAMATION_POINT,
+                            CHAR_CODE.HYPHEN,
+                            CHAR_CODE.HYPHEN
+                        ]
+                        while (
+                            hasNext(/*inline*/) &&
+                            (closingBuff[2] !== CHAR_CODE.CLOSE_BRACKET ||
+                                closingBuff[1] !== CHAR_CODE.HYPHEN ||
+                                closingBuff[0] !== CHAR_CODE.HYPHEN)
                         ) {
-                            if (
-                                currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT
-                            ) {
-                                // we're assuming this is content, part of unstructured data
-                                buffer = ' '.repeat(numOfSpacesSkipped) + buffer
-                                currentToken = Token(TOKEN_TYPE.CONTENT, buffer)
-                            } else {
-                                // it should be an attribute name token
-                                currentToken = Token(
-                                    TOKEN_TYPE.ATTRIB_NAME,
-                                    buffer
-                                )
-                            }
-                        } else {
-                            const contentBuffer =
-                                ' '.repeat(numOfSpacesSkipped) + buffer // spaces included as content
-                            currentToken = Token(
-                                TOKEN_TYPE.CONTENT,
-                                contentBuffer
-                            )
+                            closingBuff.shift()
+                            closingBuff.push(peek(/*inline*/))
+                            pos += 1
                         }
                         break
-                    } else {
-                        const errMsg =
-                            'Unknown Syntax : "' + xmlAsString[pos] + '"'
-                        throw new Error(errMsg)
+                    }
+                    default: {
+                        const buffer = readAlphaNumericAndSpecialChars()
+                        if (buffer.length === 0) {
+                            throw new Error(
+                                `Unknown Syntax : "${xmlAsString[pos]}"`
+                            )
+                        }
+                        // here we fall if we have alphanumeric string, which can be related to attributes, content or nothing
+                        if (currTokenType === TOKEN_TYPE.CLOSE_BRACKET) {
+                            currTokenType = TOKEN_TYPE.CONTENT
+                            currToken =
+                                // prettier-ignore
+                                peek(/*inline*/) === CHAR_CODE.OPEN_BRACKET
+                                    ? Token(
+                                        /*inline*/
+                                        TOKEN_TYPE.CONTENT,
+                                        buffer
+                                    )
+                                    : Token(
+                                        /*inline*/
+                                        TOKEN_TYPE.CONTENT,
+                                        buffer +
+                                                readAlphaNumericAndSpecialChars()
+                                    )
+                            return currToken
+                        }
+                        if (
+                            currTokenType !== TOKEN_TYPE.ATTRIB_NAME &&
+                            currTokenType !== TOKEN_TYPE.CONTENT
+                        ) {
+                            if (currTokenType === TOKEN_TYPE.CLOSE_ELEMENT) {
+                                // we're assuming this is content, part of unstructured data
+                                currTokenType = TOKEN_TYPE.CONTENT
+                                currToken = Token(
+                                    /*inline*/
+                                    TOKEN_TYPE.CONTENT,
+                                    ' '.repeat(numOfSpacesSkipped) + buffer
+                                )
+                                return currToken
+                            }
+                            // it should be an attribute name token
+                            currTokenType = TOKEN_TYPE.ATTRIB_NAME
+                            currToken = Token(
+                                /*inline*/
+                                TOKEN_TYPE.ATTRIB_NAME,
+                                buffer
+                            )
+                            return currToken
+                        }
+                        currTokenType = TOKEN_TYPE.CONTENT
+                        currToken = Token(
+                            /*inline*/
+                            TOKEN_TYPE.CONTENT,
+                            ' '.repeat(numOfSpacesSkipped) + buffer // spaces included as content
+                        )
+                        return currToken
                     }
                 }
             }
         }
-
-        return currentToken
     }
 
+    initializePosForLexer(/*inline*/)
+
     return {
-        peek,
-        next,
         hasNext,
+        next,
+        peek,
+        pos: getPos,
+        scope: getScope,
         // prettier-ignore
         ...(BUILD.COMPTIME
             ? {
-                getInitialPosForLexer,
+                initializePosForLexer,
                 isAssignToAttribute,
-                isBlankSpace,
+                isBlank,
                 isElementBegin,
                 isQuote,
-                replaceQuotes,
                 skipQuotes,
                 skipSpaces,
                 skipXMLDocumentHeader
