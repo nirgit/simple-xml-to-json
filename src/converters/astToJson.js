@@ -1,5 +1,7 @@
 'use strict'
 
+const { NODE_TYPE } = require('../constants')
+
 const convertToJSON = ast => {
     return buildJSONFromNode(ast.value.children[0])
 }
@@ -8,7 +10,7 @@ const buildJSONFromNode = node => {
     if (!node) return null
     const json = {}
     switch (node.type) {
-        case 'ELEMENT': {
+        case NODE_TYPE.ELEMENT: {
             let element = {}
             const attribs = buildAttributes(node.value.attributes)
             const children = buildJSONFromNode(node.value.children)
@@ -22,12 +24,12 @@ const buildJSONFromNode = node => {
             json[node.value.type] = element
             break
         }
-        case 'ATTRIBUTE': {
+        case NODE_TYPE.ATTRIBUTE: {
             const attribNameAndValue = node.value
             json[attribNameAndValue.name] = attribNameAndValue.value
             break
         }
-        case 'CONTENT': {
+        case NODE_TYPE.CONTENT: {
             return {content: node.value}
         }
         default: {
@@ -50,7 +52,7 @@ const buildChildren = children => {
     }
 }
 
-const isContentChildren = children => children && Array.isArray(children) && children.length === 1 && children[0].type === 'CONTENT'
+const isContentChildren = children => children && Array.isArray(children) && children.length === 1 && children[0].type === NODE_TYPE.CONTENT
 
 const buildAttributes = arrayNodes => {
     if (arrayNodes && Array.isArray(arrayNodes)) {

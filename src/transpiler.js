@@ -1,7 +1,8 @@
 'use strict'
 
+const { TOKEN_TYPE } = require('./constants')
 const { createLexer } = require('./lexer')
-const { Token, TOKEN_TYPE } = require('./model')
+const { Token } = require('./model')
 // AST Node types
 const [ROOT, ELEMENT, ATTRIBUTE, CONTENT] = [
     'ROOT',
@@ -161,8 +162,9 @@ function transpile(xmlAsString, astConverter) {
 }
 
 module.exports = {
-    transpile,
-    Node,
+    AttribNode,
+    ContentNode,
     ElementNode,
-    AttribNode
+    Node,
+    transpile
 }
