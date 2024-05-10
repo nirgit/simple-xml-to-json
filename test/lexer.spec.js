@@ -1,8 +1,9 @@
 'use strict'
 
 const testUtils = require('./testUtils')
+const { TOKEN_TYPE } = require('../src/constants')
 const lexer = require('../src/lexer')
-const { Token, TOKEN_TYPE } = require('../src/model')
+const { Token } = require('../src/model')
 
 describe('Lexer', () => {
     it('Simple lexing', () => {

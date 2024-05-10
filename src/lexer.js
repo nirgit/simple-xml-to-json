@@ -1,7 +1,9 @@
 'use strict'
 
-const { Token, TOKEN_TYPE } = require('./model')
-const EOF_TOKEN = Token('EOF')
+const { BUILD, TOKEN_TYPE } = require('./constants')
+const { Token } = require('./model')
+
+const EOF_TOKEN = Token(TOKEN_TYPE.EOF)
 
 const isCharBlank = (char) =>
     char === ' ' || char === '\n' || char === '\r' || char === '\t'
@@ -230,7 +232,21 @@ function createLexer(xmlAsString) {
     return {
         peek,
         next,
-        hasNext
+        hasNext,
+        // prettier-ignore
+        ...(BUILD.COMPTIME
+            ? {
+                getInitialPosForLexer,
+                isAssignToAttribute,
+                isBlankSpace,
+                isElementBegin,
+                isQuote,
+                replaceQuotes,
+                skipQuotes,
+                skipSpaces,
+                skipXMLDocumentHeader
+            }
+            : {})
     }
 }
 
