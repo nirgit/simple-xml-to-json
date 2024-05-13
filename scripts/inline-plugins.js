@@ -8,7 +8,7 @@ const walk = require('acorn-walk')
 const candidates = {
     ...require('../src/lexer').createLexer(''),
     ...require('../src/model'),
-    ...require('../src/transpiler')
+    ...require('../src/parser')
 }
 const constants = require('../src/constants')
 const inlineCommentRegExp = /\/\*\s*inline\s*\*\//

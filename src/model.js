@@ -1,8 +1,8 @@
 'use strict'
 
-const Token = (type, value) => ({
-    type,
-    value
+const Token = ($type, $value = '') => ({
+    type: $type,
+    value: $value
 })
 
 module.exports = {
