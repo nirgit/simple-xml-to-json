@@ -22,7 +22,7 @@ const skipXMLDocumentHeader = (xmlAsString, pos) => {
     return pos
 }
 
-const replaceQuotes = (str) => str.replace(/'/g, '"')
+const replaceQuotes = (str) => str.replace(/'/g, '\'')
 
 const getInitialPosForLexer = (xmlAsString) => {
     let pos = 0
