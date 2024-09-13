@@ -283,6 +283,20 @@ describe('issues', () => {
             })
         })
     })
+
+    describe('issue #50 - conversion of a single quote', () => {
+        it('should leave a single quote ("\'") untouched on conversion', () => {
+            const xmlContent = `<test:Element>Joan d'Arc</test:Element>`
+            
+            const json = convertXML(xmlContent)
+
+            expect(json).toEqual({
+                "test:Element": {
+                    content: "Joan d'Arc"
+                }
+            })
+        })
+    })
 })
 
 describe('transpiler', () => {
