@@ -118,8 +118,9 @@ function createLexer(xmlAsString) {
         } else if (isAssignToAttribute()) {
             // assign value to attribute
             skipQuotes()
+            const openingQuote = xmlAsString[pos-1]
             let start = pos
-            while (hasNext() && !isQuote(peek())) pos++
+            while (hasNext() && peek() !== openingQuote) pos++
             const buffer = replaceQuotes(xmlAsString.substring(start, pos))
             pos++
             currentToken = Token(TOKEN_TYPE.ATTRIB_VALUE, buffer)

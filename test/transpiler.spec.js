@@ -286,12 +286,13 @@ describe('issues', () => {
 
     describe('issue #50 - conversion of a single quote', () => {
         it('should leave a single quote ("\'") untouched on conversion', () => {
-            const xmlContent = `<test:Element>Joan d'Arc</test:Element>`
+            const xmlContent = `<test:Element key="v'alue">Joan d'Arc</test:Element>`
             
             const json = convertXML(xmlContent)
 
             expect(json).toEqual({
                 "test:Element": {
+                    key: "v'alue",
                     content: "Joan d'Arc"
                 }
             })
