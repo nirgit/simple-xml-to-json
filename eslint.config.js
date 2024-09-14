@@ -33,7 +33,10 @@ module.exports = {
         quotes: [
             'error',
             'single',
-            {avoidEscape: true}
+            {
+                avoidEscape: true,
+                allowTemplateLiterals: true
+            }
         ],
         semi: [
             'error',
