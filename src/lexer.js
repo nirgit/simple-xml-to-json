@@ -24,7 +24,7 @@ const skipXMLDocumentHeader = (xmlAsString, pos) => {
     return pos
 }
 
-const replaceQuotes = (str) => str.replace(/'/g, '\'')
+const replaceQuotes = (str) => str.replace(/'/g, "'")
 
 const getInitialPosForLexer = (xmlAsString) => {
     let pos = 0
@@ -120,7 +120,7 @@ function createLexer(xmlAsString) {
         } else if (isAssignToAttribute()) {
             // assign value to attribute
             skipQuotes()
-            const openingQuote = xmlAsString[pos-1]
+            const openingQuote = xmlAsString[pos - 1]
             let start = pos
             while (hasNext() && peek() !== openingQuote) pos++
             const buffer = replaceQuotes(xmlAsString.substring(start, pos))
