@@ -33,6 +33,15 @@ const AttribNode = (name, value) => {
     })
 }
 
+// Frame factory for stack items in parseXML
+function Frame(node, scopingElement) {
+    return {
+        node,
+        scopingElement,
+        children: node.value.children
+    }
+}
+
 const parseXML = (lexer) => {
     /*
     How does the grammar look?
@@ -48,63 +57,41 @@ const parseXML = (lexer) => {
     | AttributeName: String
     | AttributeValue: String
     */
-    const rootNode = Node(ROOT, {
-        children: parseExpr(lexer, Token(ROOT, 'ROOT'))
-    })
-    return rootNode
-}
-
-const parseExpr = (lexer, scopingElement) => {
-    const children = []
+    const rootNode = Node(ROOT, { children: [] })
+    const stack = [
+        Frame(rootNode, Token(ROOT, 'ROOT'))
+    ]
+    let currentFrame = stack[stack.length - 1]
     while (lexer.hasNext()) {
         const lexem = lexer.next()
         switch (lexem.type) {
-            case TOKEN_TYPE.OPEN_BRACKET: {
-                const elementLexem = lexer.next()
-                const [elementAttributes, currentToken] =
-                    parseElementAttributes(lexer)
-                let elementChildren = []
-                if (currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT) {
-                    elementChildren = parseExpr(lexer, elementLexem)
-                }
-                if (
-                    elementChildren &&
-                    elementChildren.length > 0 &&
-                    elementChildren[0].type === TOKEN_TYPE.CONTENT
-                ) {
-                    elementChildren = reduceChildrenElements(elementChildren)
-                }
-                children.push(
-                    ElementNode(
-                        elementLexem.value,
-                        elementAttributes,
-                        elementChildren
-                    )
-                )
+            case TOKEN_TYPE.OPEN_BRACKET:
+                handleOpenBracket(lexer, stack)
+                currentFrame = stack[stack.length - 1]
                 break
-            }
-            case TOKEN_TYPE.CLOSE_ELEMENT: {
-                if (lexem.value === scopingElement.value) return children
+            case TOKEN_TYPE.CLOSE_ELEMENT:
+                handleCloseElement(lexem, stack)
+                currentFrame = stack[stack.length - 1]
                 break
-            }
-            case TOKEN_TYPE.CONTENT: {
-                children.push(ContentNode(lexem.value))
+            case TOKEN_TYPE.CONTENT:
+                handleContent(lexem, currentFrame)
                 break
-            }
-            case TOKEN_TYPE.EOF: {
-                return children
-            }
-            default: {
+            case TOKEN_TYPE.EOF:
+                handleEOF(stack)
+                break
+            default:
                 throw new Error(
-                    `Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${scopingElement.value}"`
+                    `Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${currentFrame.scopingElement.value}"`
                 )
-            }
         }
+        if (stack.length === 0) break
     }
-    return children
+    return rootNode
 }
 
-const parseElementAttributes = (lexer) => {
+function handleOpenBracket(lexer, stack) {
+    const currentFrame = stack[stack.length - 1]
+    const elementLexem = lexer.next()
     const attribs = []
     let currentToken = lexer.peek()
     if (
@@ -112,23 +99,53 @@ const parseElementAttributes = (lexer) => {
         (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) ||
         (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT)
     ) {
-        return [attribs, currentToken]
-    }
-    currentToken = lexer.next()
-    while (
-        lexer.hasNext() &&
-        currentToken &&
-        currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET &&
-        currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT
-    ) {
-        const attribName = currentToken
-        lexer.next() //assignment token
-        const attribValue = lexer.next()
-        const attributeNode = AttribNode(attribName.value, attribValue.value)
-        attribs.push(attributeNode)
+        // No attributes
+    } else {
         currentToken = lexer.next()
+        while (
+            lexer.hasNext() &&
+            currentToken &&
+            currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET &&
+            currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT
+        ) {
+            const attribName = currentToken
+            lexer.next() // assignment token
+            const attribValue = lexer.next()
+            attribs.push(AttribNode(attribName.value, attribValue.value))
+            currentToken = lexer.next()
+        }
     }
-    return [attribs, currentToken]
+    if (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT) {
+        currentFrame.children.push(ElementNode(elementLexem.value, attribs, []))
+    } else {
+        const elementNode = ElementNode(elementLexem.value, attribs, [])
+        currentFrame.children.push(elementNode)
+        stack.push(Frame(elementNode, elementLexem))
+    }
+}
+
+function handleCloseElement(lexem, stack) {
+    const currentFrame = stack[stack.length - 1]
+    if (lexem.value === currentFrame.scopingElement.value) {
+        let children = currentFrame.children
+        if (
+            children &&
+            children.length > 0 &&
+            children[0].type === TOKEN_TYPE.CONTENT
+        ) {
+            children = reduceChildrenElements(children)
+            currentFrame.node.value.children = children
+        }
+        stack.pop()
+    }
+}
+
+function handleContent(lexem, currentFrame) {
+    currentFrame.children.push(ContentNode(lexem.value))
+}
+
+function handleEOF(stack) {
+    stack.length = 1 // force unwind to root
 }
 
 function reduceChildrenElements(elementChildren) {
@@ -154,7 +171,7 @@ function reduceChildrenElements(elementChildren) {
 
 function transpile(xmlAsString, astConverter) {
     const lexer = createLexer(xmlAsString)
-    const ast = parseXML(lexer, xmlAsString)
+    const ast = parseXML(lexer)
     if (astConverter) {
         return astConverter.convert(ast)
     }
