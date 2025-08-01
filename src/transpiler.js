@@ -77,14 +77,12 @@ const parseXML = (lexer) => {
                 handleContent(lexem, currentFrame)
                 break
             case TOKEN_TYPE.EOF:
-                handleEOF(stack)
                 break
             default:
                 throw new Error(
                     `Unknown Lexem type: ${lexem.type} "${lexem.value}, scoping element: ${currentFrame.scopingElement.value}"`
                 )
         }
-        if (stack.length === 0) break
     }
     return rootNode
 }
@@ -92,36 +90,38 @@ const parseXML = (lexer) => {
 function handleOpenBracket(lexer, stack) {
     const currentFrame = stack[stack.length - 1]
     const elementLexem = lexer.next()
-    const attribs = []
+    let attribs = []
     let currentToken = lexer.peek()
-    if (
-        !lexer.hasNext() ||
-        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_BRACKET) ||
-        (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT)
-    ) {
-        // No attributes
-    } else {
-        currentToken = lexer.next()
-        while (
-            lexer.hasNext() &&
-            currentToken &&
-            currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET &&
-            currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT
-        ) {
-            const attribName = currentToken
-            lexer.next() // assignment token
-            const attribValue = lexer.next()
-            attribs.push(AttribNode(attribName.value, attribValue.value))
-            currentToken = lexer.next()
-        }
+    const areAttributesExpected = lexer.hasNext() &&
+        (currentToken && currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET) &&
+        (currentToken && currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT)
+    if (areAttributesExpected) {
+        [attribs, currentToken] = collectAttributes(lexer)
     }
+    const elementNode = ElementNode(elementLexem.value, attribs, [])
+    currentFrame.children.push(elementNode)
     if (currentToken && currentToken.type === TOKEN_TYPE.CLOSE_ELEMENT) {
-        currentFrame.children.push(ElementNode(elementLexem.value, attribs, []))
-    } else {
-        const elementNode = ElementNode(elementLexem.value, attribs, [])
-        currentFrame.children.push(elementNode)
-        stack.push(Frame(elementNode, elementLexem))
+        return
+    } 
+    stack.push(Frame(elementNode, elementLexem))
+}
+
+function collectAttributes(lexer) {
+    const attribs = []
+    let currentToken = lexer.next()
+    while (
+        lexer.hasNext() &&
+        currentToken &&
+        currentToken.type !== TOKEN_TYPE.CLOSE_BRACKET &&
+        currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT
+    ) {
+        const attribName = currentToken
+        lexer.next() // assignment token
+        const attribValue = lexer.next()
+        attribs.push(AttribNode(attribName.value, attribValue.value))
+        currentToken = lexer.next()
     }
+    return [attribs, currentToken]
 }
 
 function handleCloseElement(lexem, stack) {
@@ -142,10 +142,6 @@ function handleCloseElement(lexem, stack) {
 
 function handleContent(lexem, currentFrame) {
     currentFrame.children.push(ContentNode(lexem.value))
-}
-
-function handleEOF(stack) {
-    stack.length = 1 // force unwind to root
 }
 
 function reduceChildrenElements(elementChildren) {
