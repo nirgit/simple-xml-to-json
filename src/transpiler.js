@@ -122,6 +122,9 @@ const parseElementAttributes = (lexer) => {
         currentToken.type !== TOKEN_TYPE.CLOSE_ELEMENT
     ) {
         const attribName = currentToken
+        if (attribName.value === 'content') {
+            attribName.value = '@content'
+        }
         lexer.next() //assignment token
         const attribValue = lexer.next()
         const attributeNode = AttribNode(attribName.value, attribValue.value)

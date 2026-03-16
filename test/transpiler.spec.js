@@ -730,5 +730,18 @@ describe('transpiler', () => {
                 }
             })
         })
+
+        it('should transform an XML that has a "content" attribute to JSON without considering "content" as a reserved keyword', () => {
+            const mockXML = '<a content="this is content">bla</a>'
+            const expectedJSON = {
+                a: {
+                    '@content': 'this is content',
+                    content: 'bla'
+                }
+            }
+
+            const actualJSON = convertXML(mockXML)
+            expect(actualJSON).toEqual(expectedJSON)
+        })
     })
 })
