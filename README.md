@@ -55,9 +55,17 @@ According to a __simple__ benchmark test I performed in __April 2024__ with a ra
 ## Current Drawbacks
 1. All values are translated to strings in JSON
 2. There are currently reserved words in the JSON converter: 
-    * "content" 
+    * "content" - up to version 1.2.3
     * "children"
 
-    so you cannot by default have an attribute with that name and free text as the content of the element or have nested elements as children.
+    An element content (text) gets converted to the `"content"` JSON property by default.\
+    Element\'s attributes are directly translated to JSON properties as well by default which could
+    potentially create a name collision in case an XML element holds the `"content"` attribute and has 
+    text for content.\
+    This would result in a parsing error.\
+        - example creating name collision:\
+         ```<MyElement content="...">element content</MyElement>```
+    - Starting version 1.2.4 a "content" attribute name will be converted to a `"@content"` JSON property 
+    name to avoid the name collision explained above.
     
     *If you need to, you can write your own converter from the AST created by the parser, and pass it as a 2nd parameter after the xml string*
