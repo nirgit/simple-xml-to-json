@@ -58,14 +58,21 @@ According to a __simple__ benchmark test I performed in __April 2024__ with a ra
     * "content" - up to version 1.2.3
     * "children"
 
-    An element content (text) gets converted to the `"content"` JSON property by default.\
-    Element\'s attributes are directly translated to JSON properties as well by default which could
-    potentially create a name collision in case an XML element holds the `"content"` attribute and has 
-    text for content.\
-    This would result in a parsing error.\
-        - example creating name collision:\
-         ```<MyElement content="...">element content</MyElement>```
-    - Starting version 1.2.4 a "content" attribute name will be converted to a `"@content"` JSON property 
-    name to avoid the name collision explained above.
-    
-    *If you need to, you can write your own converter from the AST created by the parser, and pass it as a 2nd parameter after the xml string*
+### Default Mapping & Collisions
+
+By default, an element's **text content** is mapped to a `"content"` property, while its **attributes** are mapped directly to JSON properties of the same name.
+
+#### The Risk
+If an XML element possesses an attribute actually named `content` while also containing text content, a **name collision** occurs. This typically results in a parsing error or data loss due to duplicate keys.
+
+**Example Collision:**
+```xml
+<MyElement content="attr-value">text-content</MyElement>
+ ```
+
+### Version 1.2.3+ Fix
+To prevent these collisions, versions newer than 1.2.3 will specifically prefix the `"content"` attribute name with an `@` symbol. So the attribute `"content"` now becomes the `"@content"` JSON property.
+
+
+> [!NOTE]
+> If you need to, you can write your own converter from the AST created by the parser, and pass it as a 2nd parameter after the xml string
