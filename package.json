@@ -32,6 +32,14 @@
     }
   ],
   "main": "lib/simpleXmlToJson.min.js",
+  "module": "lib/simpleXmlToJson.min.mjs",
+  "exports": {
+    ".": {
+      "import": "./lib/simpleXmlToJson.min.mjs",
+      "require": "./lib/simpleXmlToJson.min.js",
+      "default": "./lib/simpleXmlToJson.min.js"
+    }
+  },
   "typings": "typings/simple-xml-to-json.d.ts",
   "files": [
     "lib",
