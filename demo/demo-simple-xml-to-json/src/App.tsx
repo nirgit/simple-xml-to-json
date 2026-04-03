@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+import { convertXML } from 'simple-xml-to-json'
+
 function App() {
   const [count, setCount] = useState(0)
+  const [xml, setXml] = useState("<note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body></note>")
+  const [json, setJson] = useState("")
 
   return (
     <>
@@ -27,6 +31,12 @@ function App() {
         >
           Count is {count}
         </button>
+        <div className="output">
+          <h2>XML to JSON</h2>
+          <textarea value={xml} onChange={(e) => setXml(e.target.value)} rows={10} cols={50} />
+          <button onClick={() => setJson(convertXML(xml))}>Convert</button>
+          <pre>{JSON.stringify(json, null, 2)}</pre>
+        </div>
       </section>
 
       <div className="ticks"></div>
