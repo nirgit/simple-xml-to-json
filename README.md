@@ -19,23 +19,32 @@ Simply install using NPM in your project directory
    * `xmlToConvert` \<string\>
    * Returns: An AST representation of the XML \<JSON\>
 
-Code Example:
+**CommonJS (Node.js):**
 ```javascript
-const {convertXML, createAST} = require("simple-xml-to-json")
+const { convertXML, createAST } = require("simple-xml-to-json")
 
 const myJson = convertXML(myXMLString)
 const myYaml = convertXML(myXMLString, yamlConverter)
 const myAst = createAST(myXMLString)
-````
+```
+
+**ESM (modern frontend apps, Node.js with `"type": "module"`, bundlers):**
+```javascript
+import { convertXML, createAST } from "simple-xml-to-json"
+
+const myJson = convertXML(myXMLString)
+const myYaml = convertXML(myXMLString, yamlConverter)
+const myAst = createAST(myXMLString)
+```
 
 ---
 ### ![TS](https://raw.githubusercontent.com/nirgit/assets/master/simple-xml-to-json/ts_icon_32.png) Typescript compatible
 ---
 
 ## Notes and how to use code
-1. The easiest thing to start is to run `node example/example.js` in your terminal and see what happens.
+1. The easiest thing to start is to run `node example/example.js` (CJS) or `node example/example.mjs` (ESM) in your terminal and see what happens.
 2. There's the `xmlToJson.js` file for convenience. Just pass in the XML as a String.
-3. It's MIT licensed so you can do whatever :)
+3. MIT licensed allowing code customization
 4. Profit
 
 ## How this works in a nutshell

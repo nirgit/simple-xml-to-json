@@ -7,28 +7,48 @@ const terser = require('@rollup/plugin-terser')
 module.exports = (commandLineArgs) => {
     const { inline } = commandLineArgs
     delete commandLineArgs.inline
-    return {
-        input: 'src/xmlToJson.js',
-        output: [
-            {
-                file: 'lib/simpleXmlToJson.min.js',
-                format: 'cjs',
-                exports: 'auto',
-                plugins: [terser()]
-            },
-            {
-                file: 'lib/simpleXmlToJson.js',
-                format: 'cjs',
-                exports: 'auto'
-            }
-        ],
-        plugins: [
-            commonjs(),
-            replace({
-                preventAssignment: true,
-                values: { 'BUILD.COMPTIME': 'false' }
-            }),
-            ...(inline ? require('./scripts/inline-plugins') : [])
-        ]
-    }
+
+    const sharedPlugins = [
+        commonjs(),
+        replace({
+            preventAssignment: true,
+            values: { 'BUILD.COMPTIME': 'false' }
+        }),
+        ...(inline ? require('./scripts/inline-plugins') : [])
+    ]
+
+    return [
+        {
+            input: 'src/xmlToJson.js',
+            output: [
+                {
+                    file: 'lib/simpleXmlToJson.min.js',
+                    format: 'cjs',
+                    exports: 'auto',
+                    plugins: [terser()]
+                },
+                {
+                    file: 'lib/simpleXmlToJson.js',
+                    format: 'cjs',
+                    exports: 'auto'
+                }
+            ],
+            plugins: sharedPlugins
+        },
+        {
+            input: 'src/xmlToJson.esm.mjs',
+            output: [
+                {
+                    file: 'lib/simpleXmlToJson.min.mjs',
+                    format: 'es',
+                    plugins: [terser()]
+                },
+                {
+                    file: 'lib/simpleXmlToJson.mjs',
+                    format: 'es'
+                }
+            ],
+            plugins: sharedPlugins
+        }
+    ]
 }
