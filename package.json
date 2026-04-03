@@ -51,7 +51,8 @@
     "lint": "eslint ./src ./test",
     "prettify": "prettier --write ./**/*.js",
     "example": "node example/example.js",
-    "test": "jest ",
+    "exampleESM": "node example/example.mjs",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "make-new-release-lib": "npm run validate-lib-health && sh ./scripts/make-new-release.sh",
     "validate-lib-health": "npm run prettify && npm run lint && npm test"
   },

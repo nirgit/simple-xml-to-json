@@ -36,7 +36,7 @@ module.exports = (commandLineArgs) => {
             plugins: sharedPlugins
         },
         {
-            input: 'src/xmlToJson.esm.js',
+            input: 'src/xmlToJson.esm.mjs',
             output: [
                 {
                     file: 'lib/simpleXmlToJson.min.mjs',
