@@ -1,6 +1,22 @@
-import { convertXML, createAST } from '../src/xmlToJson.esm.mjs'
+import xmlToJson, { convertXML, createAST } from '../src/xmlToJson.esm.mjs'
 
 describe('ESM entry point', () => {
+    it('supports default import (issue #71)', () => {
+        const xml = '<root><item id="1">Hello</item></root>'
+        expect(xmlToJson.convertXML(xml)).toEqual({
+            root: {
+                children: [
+                    {
+                        item: {
+                            id: '1',
+                            content: 'Hello',
+                        },
+                    },
+                ],
+            },
+        })
+    })
+
     it('converts XML to JSON', () => {
         const xml = '<root><item id="1">Hello</item></root>'
         expect(convertXML(xml)).toEqual({
